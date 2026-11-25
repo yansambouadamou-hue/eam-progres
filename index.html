@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta name="theme-color" content="#1e3a8a">
+    <title>ONG EAM-Progrès - Suivi & Évaluation</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkw9K8tjJu2VyqfWRJHsj0j-g65O1a_p8",
+            authDomain: "eam-progres-d4806.firebaseapp.com",
+            projectId: "eam-progres-d4806",
+            storageBucket: "eam-progres-d4806.firebasestorage.app",
+            messagingSenderId: "92162820987",
+            appId: "1:92162820987:web:2c627776b32c982d4ccbde",
+            measurementId: "G-01PVJLZ06K"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        window.firebaseAuth = { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInAnonymously, signOut, onAuthStateChanged };
+        window.dispatchEvent(new Event('firebaseReady'));
+    </script>
+
+    <style>
+        :root {
+            --navy-900: #0f1e3d; --navy-800: #1e3a8a; --navy-700: #1e40af; --navy-600: #2549b8; --navy-100: #dbeafe; --navy-50: #eff6ff;
+            --amber-500: #f59e0b; --amber-400: #fbbf24; --amber-100: #fef3c7;
+            --slate-900: #0f172a; --slate-700: #334155; --slate-500: #64748b; --slate-400: #94a3b8; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+            --success: #10b981; --success-bg:#d1fae5; --warning: #f59e0b; --warning-bg:#fef3c7; --danger: #ef4444; --danger-bg: #fee2e2; --info: #3b82f6; --info-bg: #dbeafe; --purple: #8b5cf6; --purple-bg: #ede9fe;
+            --shadow-sm: 0 1px 2px rgba(15,23,42,0.04); --shadow-md: 0 4px 12px rgba(15,23,42,0.06); --shadow-lg: 0 10px 30px rgba(15,23,42,0.08); --shadow-xl: 0 20px 40px rgba(15,23,42,0.12);
+            --radius-sm: 10px; --radius-md: 14px; --radius-lg: 20px; --radius-xl: 28px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif; }
+        body { background: var(--slate-100); color: var(--slate-700); -webkit-font-smoothing: antialiased; }
+        h1, h2, h3, h4, h5, h6, .logo, .stat-number, .login-title { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; letter-spacing: -0.02em; }
+
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 272px; background: #ffffff; color: var(--slate-700); flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; border-right: 1px solid var(--slate-200); z-index: 100; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 24px 22px; border-bottom: 1px solid var(--slate-100); }
+        .logo { display: flex; align-items: center; gap: 12px; font-size: 19px; font-weight: 800; color: var(--navy-900); }
+        .logo img { width: 42px; height: 42px; border-radius: 12px; object-fit: contain; background: linear-gradient(135deg, var(--navy-800) 0%, var(--navy-600) 100%); padding: 6px; box-shadow: var(--shadow-md); }
+        .logo span { color: var(--navy-900); line-height: 1.15; }
+        .logo span .accent { color: var(--amber-500); }
+        .logo small { font-size: 10.5px; font-weight: 500; color: var(--slate-500); display: block; margin-top: 3px; letter-spacing: 0.02em; text-transform: uppercase; }
+        .sidebar-nav { padding: 16px 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.18s ease; font-weight: 500; color: var(--slate-600, #475569); font-size: 14px; position: relative; }
+        .nav-item i { width: 22px; font-size: 15px; text-align: center; color: var(--slate-400); transition: color 0.18s ease; }
+        .nav-item:hover:not(.active) { background: var(--slate-100); color: var(--navy-800); }
+        .nav-item:hover:not(.active) i { color: var(--navy-700); }
+        .nav-item.active { background: linear-gradient(135deg, var(--navy-800) 0%, var(--navy-700) 100%); color: #ffffff; box-shadow: 0 6px 16px -6px rgba(30, 58, 138, 0.5); }
+        .nav-item.active i { color: var(--amber-400); }
+        .user-card { padding: 18px 20px; border-top: 1px solid var(--slate-100); font-size: 13px; background: var(--slate-50); }
+        .user-name { font-weight: 600; margin-bottom: 4px; color: var(--slate-800, #1e293b); font-size: 13px; }
+        .user-role { font-size: 11px; color: var(--slate-500); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+        .logout-btn { background: #ffffff; border: 1px solid var(--slate-200); color: var(--slate-700); padding: 8px 12px; border-radius: var(--radius-sm); width: 100%; cursor: pointer; font-weight: 600; transition: all 0.18s ease; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .logout-btn:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+        .main-content { flex: 1; background: var(--slate-100); min-height: 100vh; overflow-x: hidden; }
+        .top-bar { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--slate-200); position: sticky; top: 0; z-index: 50; flex-wrap: wrap; gap: 8px; }
+        .admin-badge { display: flex; align-items: center; gap: 10px; background: var(--slate-50); border: 1px solid var(--slate-200); padding: 6px 14px; border-radius: 100px; font-size: 12.5px; color: var(--slate-700); font-weight: 500; }
+        .admin-badge i { color: var(--navy-700); }
+        .admin-badge .readonly-badge { background: var(--amber-100); color: #92400e; padding: 3px 10px; border-radius: 100px; font-size: 10.5px; font-weight: 700; display: none; margin-left: 6px; letter-spacing: 0.02em; text-transform: uppercase; }
+        .logout-mobile { display: none; background: #fff; border: 1px solid var(--slate-200); color: var(--slate-700); padding: 6px 14px; border-radius: 100px; cursor: pointer; font-weight: 600; font-size: 12px; align-items: center; gap: 6px; white-space: nowrap; }
+        .logout-mobile:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+        .page { padding: 24px 28px; display: none; animation: pageIn 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+        .page.active-page { display: block; }
+        @keyframes pageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page h2 { font-size: 24px; font-weight: 800; color: var(--navy-900); margin-bottom: 4px; }
+        .page > p { color: var(--slate-500); font-size: 14px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #ffffff; border-radius: var(--radius-lg); padding: 20px 22px; box-shadow: var(--shadow-sm); border: 1px solid var(--slate-200); position: relative; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, var(--navy-800), var(--amber-500)); }
+        .stat-title { color: var(--slate-500); font-size: 11.5px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .stat-number { font-size: 32px; font-weight: 800; color: var(--navy-900); line-height: 1; }
+        .card-panel { background: #ffffff; border-radius: var(--radius-lg); padding: 22px 24px; margin-bottom: 20px; border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm); }
+        .card-panel h3, .card-panel h4 { color: var(--navy-900); font-weight: 700; margin-bottom: 12px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+        .btn-primary { background: linear-gradient(135deg, var(--navy-800) 0%, var(--navy-700) 100%); color: white; border: none; padding: 9px 18px; border-radius: 100px; font-weight: 600; cursor: pointer; transition: all 0.18s ease; display: inline-flex; align-items: center; gap: 7px; font-size: 13px; box-shadow: 0 4px 10px -4px rgba(30, 58, 138, 0.4); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -6px rgba(30, 58, 138, 0.5); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary.btn-sm { padding: 5px 13px; font-size: 12px; }
+        .btn-primary.btn-danger { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        .btn-primary.btn-amber { background: linear-gradient(135deg, #d97706, var(--amber-500)); color: #fff; }
+        .btn-outline { background: #ffffff; border: 1px solid var(--slate-200); color: var(--slate-700); padding: 8px 16px; border-radius: 100px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.18s ease; }
+        .btn-outline:hover { background: var(--slate-50); border-color: var(--navy-700); color: var(--navy-800); }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--slate-100); }
+        th { color: var(--slate-500); font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; background: var(--slate-50); }
+        tbody tr:hover { background: var(--slate-50); }
+        .badge { background: var(--success-bg); color: #065f46; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .badge-secondary { background: var(--slate-200); color: var(--slate-700); }
+        .badge-warning { background: var(--warning-bg); color: #92400e; }
+        .badge-info { background: var(--info-bg); color: #1e40af; }
+        .badge-purple { background: var(--purple-bg); color: #5b21b6; }
+        .badge-success { background: var(--success-bg); color: #065f46; }
+        .badge-danger { background: var(--danger-bg); color: #991b1b; }
+        .icon-action { color: var(--slate-500); margin: 0 3px; cursor: pointer; font-size: 15px; padding: 6px; border-radius: 6px; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; }
+        .icon-action:hover { color: var(--navy-700); background: var(--slate-100); }
+        @media (max-width: 768px) {
+            .icon-action { font-size: 16px; padding: 8px; }
+        }
+        .filter-select { padding: 9px 14px; border-radius: 100px; border: 1px solid var(--slate-200); background: #ffffff; font-size: 13px; color: var(--slate-700); cursor: pointer; min-width: 160px; font-weight: 500; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; visibility: hidden; opacity: 0; transition: 0.22s ease; padding: 16px; }
+        .modal.active { visibility: visible; opacity: 1; }
+        .modal-content { background: #ffffff; border-radius: var(--radius-xl); width: 640px; max-width: 100%; padding: 28px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-xl); animation: modalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-content h3 { font-size: 20px; font-weight: 800; color: var(--navy-900); margin-bottom: 18px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 12.5px; color: var(--slate-700); }
+        .form-group label .required { color: var(--danger); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200); font-size: 14px; background: #ffffff; color: var(--slate-900); font-family: inherit; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--navy-700); box-shadow: 0 0 0 3px var(--navy-100); }
+        .form-group textarea { min-height: 70px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .project-card { background: #ffffff; border-radius: var(--radius-lg); padding: 18px; border: 1px solid var(--slate-200); cursor: pointer; position: relative; transition: all 0.2s ease; overflow: hidden; }
+        .project-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: transparent; }
+        .project-card .project-title { font-size: 15px; font-weight: 700; color: var(--navy-900); margin-bottom: 4px; }
+        .project-card .project-code { font-size: 11px; color: var(--slate-500); font-weight: 600; text-transform: uppercase; }
+        .project-card .project-meta { display: flex; gap: 10px; margin: 10px 0; font-size: 11.5px; color: var(--slate-500); flex-wrap: wrap; }
+        .project-card .project-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; background: rgba(255,255,255,0.95); border-radius: 100px; padding: 4px 8px; opacity: 1; box-shadow: var(--shadow-sm); z-index: 5; }
+        @media (min-width: 769px) {
+            .project-card .project-actions { opacity: 0; transition: opacity 0.2s ease; }
+            .project-card:hover .project-actions { opacity: 1; }
+        }
+        .project-card .project-actions i { font-size: 13px; padding: 5px; cursor: pointer; color: var(--slate-500); }
+        .project-card .project-actions i:hover { color: var(--navy-700); }
+        .feedback-card { background: #ffffff; border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 12px; border: 1px solid var(--slate-200); border-left: 4px solid var(--navy-700); }
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--slate-900); color: white; padding: 13px 22px; border-radius: 100px; box-shadow: var(--shadow-xl); z-index: 9999; max-width: 90%; font-size: 13.5px; font-weight: 500; display: none; text-align: center; }
+        .toast.show { display: inline-flex; animation: slideUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        .toast.error { background: var(--danger); }
+        .toast.success { background: var(--success); }
+        .toast.info { background: var(--navy-800); }
+        @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .debug-panel { background: #0f172a; color: #cbd5e1; padding: 14px 16px; border-radius: var(--radius-md); font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 11.5px; max-height: 160px; overflow-y: auto; line-height: 1.6; }
+        .login-page { display: flex; min-height: 100vh; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 50%, #1e40af 100%); padding: 20px; }
+        .login-box { background: #ffffff; border-radius: var(--radius-xl); padding: 40px 36px; max-width: 420px; width: 100%; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35); }
+        .login-box .login-logo { text-align: center; margin-bottom: 16px; }
+        .login-box .login-logo img { width: 80px; height: 80px; object-fit: contain; border-radius: 20px; background: linear-gradient(135deg, var(--navy-800) 0%, var(--navy-600) 100%); padding: 14px; }
+        .login-box .login-title { text-align: center; font-size: 28px; font-weight: 800; color: var(--navy-900); }
+        .login-box .login-title .highlight { color: var(--amber-500); }
+        .login-box .login-subtitle { text-align: center; color: var(--slate-500); font-size: 13px; margin-bottom: 26px; margin-top: 4px; }
+        .login-box .guest-info { text-align: center; font-size: 12px; color: var(--slate-500); margin: 12px 0 8px; padding: 10px; background: var(--slate-50); border-radius: var(--radius-md); border: 1px dashed var(--slate-200); }
+        .login-box .btn-login { width: 100%; padding: 14px; border: none; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--navy-800) 0%, var(--navy-700) 100%); color: white; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+        .login-box .btn-guest { width: 100%; padding: 14px; border: 1px solid var(--slate-200); border-radius: var(--radius-md); background: #ffffff; color: var(--slate-700); font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .disagg-homme { color: #3b82f6; } .disagg-femme { color: #ec4899; } .disagg-fille { color: var(--amber-500); } .disagg-garcon { color: var(--success); } .disagg-handicap { color: var(--purple); }
+        .stat-disagg { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 8px; }
+        .stat-disagg-item { background: var(--slate-50); padding: 10px; border-radius: var(--radius-md); text-align: center; font-size: 11.5px; color: var(--slate-500); font-weight: 600; border: 1px solid var(--slate-100); }
+        .stat-disagg-item .number { font-weight: 800; font-size: 20px; display: block; color: var(--navy-900); margin-bottom: 2px; }
+        .benef-table th, .benef-table td { padding: 10px 8px; font-size: 12.5px; }
+        .benef-table .total-benef { font-size: 20px; font-weight: 800; color: var(--navy-900); }
+        .sync-indicator { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--slate-500); padding: 4px 10px; background: var(--slate-50); border-radius: 100px; font-weight: 500; }
+        .sync-indicator .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .sync-indicator .dot.synced { background: var(--success); }
+        .sync-indicator .dot.syncing { background: var(--amber-500); animation: pulse 1.2s infinite; }
+        .sync-indicator .dot.error { background: var(--danger); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .sync-banner { background: linear-gradient(135deg, #eff6ff 0%, #fef3c7 100%); border: 1px solid var(--navy-100); border-radius: var(--radius-lg); padding: 14px 22px; margin: 18px 28px 0 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+        .sync-banner .sync-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--navy-900); }
+        .sync-banner .sync-status .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .sync-banner .sync-status .dot.green { background: var(--success); }
+        .sync-banner .sync-status .dot.orange { background: var(--amber-500); }
+        .sync-banner .sync-status .dot.red { background: var(--danger); }
+        .sync-banner .sync-info { display: flex; gap: 16px; font-size: 12px; color: var(--navy-800); flex-wrap: wrap; font-weight: 500; }
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--slate-400); }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; color: var(--slate-300); }
+        .empty-state p { font-size: 14px; font-weight: 500; }
+        
+        @media (max-width: 900px) {
+            .sidebar { width: 72px; }
+            .sidebar-header .logo span { display: none; }
+            .nav-item { justify-content: center; padding: 14px 8px; }
+            .nav-item span { display: none; }
+            .nav-item i { font-size: 18px; color: var(--slate-500); }
+            .nav-item.active i { color: var(--amber-400); }
+            .user-card { display: none; }
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .page { padding: 16px; }
+            .top-bar { padding: 10px 16px; }
+            .logout-mobile { display: inline-flex; }
+            .project-grid { grid-template-columns: 1fr; }
+            .modal-content { padding: 20px; width: 95%; }
+            .form-row, .form-row-4 { grid-template-columns: 1fr; }
+            .sync-banner { flex-direction: column; margin: 12px 16px 0 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div id="loginPage" class="login-page">
+        <div class="login-box">
+            <div class="login-logo"><img src="logo.png" alt="Logo ONG EAM-Progrès"></div>
+            <div class="login-title">EAM <span class="highlight">PROGRÈS</span></div>
+            <div class="login-subtitle">ONG EAM-Progrès · Suivi &amp; Évaluation</div>
+            
+            <form id="loginForm">
+                <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="admin@eam-progres.org"></div>
+                <div class="form-group"><label>Mot de passe</label><input type="password" id="loginPassword" placeholder="Votre mot de passe"></div>
+                <button type="submit" class="btn-login">Se connecter</button>
+                <div id="loginError" style="color:var(--danger);font-size:13px;text-align:center;margin-top:12px;display:none;"></div>
+            </form>
+            
+            <div class="guest-info"><i class="fas fa-eye" style="color:var(--amber-500);"></i> Mode invité : <strong>lecture seule</strong></div>
+            <button class="btn-guest" id="guestLoginBtn"><i class="fas fa-user-secret"></i> Continuer en invité</button>
+            
+            <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--slate-500);">
+                Pas encore de compte ? <a id="showRegisterBtn" style="color:var(--navy-700);font-weight:700;cursor:pointer;">S'inscrire</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerPage" class="login-page" style="display:none;">
+        <div class="login-box">
+            <div class="login-logo"><img src="logo.png" alt="Logo ONG EAM-Progrès"></div>
+            <div class="login-title">EAM <span class="highlight">PROGRÈS</span></div>
+            <div class="login-subtitle">Créer un compte</div>
+            <form id="registerForm">
+                <div class="form-group"><label>Email</label><input type="email" id="registerEmail" placeholder="votre@email.com"></div>
+                <div class="form-group"><label>Mot de passe</label><input type="password" id="registerPassword" placeholder="6 caractères min" minlength="6"></div>
+                <div class="form-group"><label>Confirmer</label><input type="password" id="registerConfirm" placeholder="Confirmez"></div>
+                <button type="submit" class="btn-login">S'inscrire</button>
+                <div id="registerError" style="color:var(--danger);font-size:13px;text-align:center;margin-top:12px;display:none;"></div>
+            </form>
+            <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--slate-500);">
+                Déjà un compte ? <a id="showLoginBtn" style="color:var(--navy-700);font-weight:700;cursor:pointer;">Se connecter</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div id="appWrapper" style="display:none;">
+        <div class="app-container">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo">
+                        <img src="logo.png" alt="Logo ONG EAM-Progrès">
+                        <span>EAM<span class="accent">-</span>Progrès <small>Suivi & Évaluation</small></span>
+                    </div>
+                </div>
+                <div class="sidebar-nav">
+                    <div class="nav-item active" data-page="dashboard"><i class="fas fa-chart-pie"></i> <span>Tableau de bord</span></div>
+                    <div class="nav-item" data-page="projets"><i class="fas fa-layer-group"></i> <span>Projets</span></div>
+                    <div class="nav-item" data-page="activites"><i class="fas fa-clipboard-check"></i> <span>Activités</span></div>
+                    <div class="nav-item" data-page="beneficiaires"><i class="fas fa-user-group"></i> <span>Bénéficiaires</span></div>
+                    <div class="nav-item" data-page="evaluations"><i class="fas fa-award"></i> <span>Évaluations</span></div>
+                    <div class="nav-item" data-page="indicateurs"><i class="fas fa-bullseye"></i> <span>Indicateurs</span></div>
+                    <div class="nav-item" data-page="feedback"><i class="fas fa-comments"></i> <span>Feedback</span></div>
+                    <div class="nav-item" data-page="rapports"><i class="fas fa-chart-line"></i> <span>Rapports</span></div>
+                    <div class="nav-item" data-page="debug"><i class="fas fa-terminal"></i> <span>Débogage</span></div>
+                </div>
+                <div class="user-card">
+                    <div class="user-name"><i class="fas fa-circle-user"></i> <span id="userDisplayName">Coordinateur</span></div>
+                    <div class="user-role" id="userRoleDisplay">Coordinateur principal</div>
+                    <button class="logout-btn" id="logoutBtn"><i class="fas fa-arrow-right-from-bracket"></i> Déconnexion</button>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <div class="top-bar">
+                    <button class="logout-mobile" id="logoutMobileBtn"><i class="fas fa-arrow-right-from-bracket"></i> Déconnexion</button>
+                    <div class="admin-badge">
+                        <span id="connectionStatus" style="width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--success);margin-right:6px;"></span>
+                        <i class="fas fa-shield-halved"></i> <span id="userNameDisplayTop">Coordinateur</span>
+                        <span class="readonly-badge" id="readonlyBadge"><i class="fas fa-eye"></i> Lecture seule</span>
+                        <span class="sync-indicator" id="syncIndicator">
+                            <span class="dot synced" id="syncDot"></span>
+                            <span id="syncText">Synchronisé</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="sync-banner" id="syncBanner">
+                    <div class="sync-status">
+                        <span class="dot green" id="syncStatusDot"></span>
+                        <span id="syncStatusText" style="font-weight:700;color:var(--navy-900);">✅ Synchronisation active</span>
+                    </div>
+                    <div class="sync-info">
+                        <span><i class="fas fa-database"></i> Local: <span id="localDataCount">0</span></span>
+                        <span><i class="fas fa-cloud"></i> Cloud: <span id="cloudDataCount">0</span></span>
+                        <span><i class="fas fa-code-branch"></i> App: <span>3.2.0</span></span>
+                    </div>
+                </div>
+
+                <!-- DASHBOARD -->
+                <div id="dashboardPage" class="page active-page">
+                    <h2>Bienvenue, <span id="welcomeName">Coordinateur</span> 👋</h2>
+                    <p>Aperçu des activités de suivi & évaluation</p>
+                    
+                    <div class="stats-grid" style="margin-top:20px;">
+                        <div class="stat-card"><div class="stat-title">Projets actifs</div><div class="stat-number" id="statProjets">0</div></div>
+                        <div class="stat-card"><div class="stat-title">Bénéficiaires totaux</div><div class="stat-number" id="statBenef">0</div></div>
+                        <div class="stat-card"><div class="stat-title">Évaluations</div><div class="stat-number" id="statEvals">0</div></div>
+                        <div class="stat-card"><div class="stat-title">Feedbacks reçus</div><div class="stat-number" id="statFeedbacks">0</div></div>
+                    </div>
+                    
+                    <div class="card-panel" id="disaggSummary" style="display:none;">
+                        <h4 style="font-size:14px;margin-bottom:12px;"><i class="fas fa-users-viewfinder" style="color:var(--navy-700);"></i> Désagrégation des bénéficiaires</h4>
+                        <div class="stat-disagg" id="disaggGrid"></div>
+                    </div>
+                </div>
+
+                <!-- PROJETS -->
+                <div id="projetsPage" class="page">
+                    <div class="flex-between">
+                        <h2>Projets</h2>
+                        <button class="btn-primary" id="addProjectBtn"><i class="fas fa-plus"></i> Nouveau projet</button>
+                    </div>
+                    <div class="card-panel" style="margin-bottom:16px;padding:14px 18px;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                            <label style="font-weight:600;font-size:12.5px;color:var(--slate-500);text-transform:uppercase;"><i class="fas fa-globe"></i> Filtrer par pays :</label>
+                            <input type="text" id="projectCountryFilterInput" class="filter-select" placeholder="Rechercher un pays...">
+                            <button class="btn-outline" id="clearProjectFilters"><i class="fas fa-xmark"></i> Effacer</button>
+                        </div>
+                    </div>
+                    <div class="card-panel"><div class="project-grid" id="projectGrid"></div></div>
+                </div>
+
+                <!-- ACTIVITÉS -->
+                <div id="activitesPage" class="page">
+                    <div class="flex-between">
+                        <h2>Activités</h2>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn-primary" id="addActiviteBtn"><i class="fas fa-plus"></i> Ajouter</button>
+                            <button class="btn-primary btn-amber" id="importActiviteBtn"><i class="fas fa-file-excel"></i> Importer Excel</button>
+                        </div>
+                    </div>
+                    <div class="card-panel" style="margin-bottom:16px;padding:14px 18px;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                            <label style="font-weight:600;font-size:12.5px;color:var(--slate-500);text-transform:uppercase;"><i class="fas fa-filter"></i> Filtre par projet :</label>
+                            <select id="activiteProjectFilter" class="filter-select"><option value="all">Tous les projets</option></select>
+                        </div>
+                    </div>
+                    <div class="card-panel">
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead><tr><th>Activité</th><th>Projet</th><th>Type</th><th>Début</th><th>Fin</th><th>Statut</th><th>Cible</th><th>Atteint</th><th>Prog.</th><th>Actions</th></tr></thead>
+                                <tbody id="activiteTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BÉNÉFICIAIRES -->
+                <div id="beneficiairesPage" class="page">
+                    <div class="flex-between">
+                        <h2>Bénéficiaires</h2>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn-primary" id="addBenefBtn"><i class="fas fa-plus"></i> Ajouter</button>
+                            <button class="btn-primary btn-amber" id="importExcelBtn"><i class="fas fa-file-excel"></i> Importer Excel</button>
+                            <button class="btn-primary" id="exportBenefBtn"><i class="fas fa-file-export"></i> Exporter Excel</button>
+                        </div>
+                    </div>
+                    <div class="card-panel" style="margin-bottom:16px;padding:14px 18px;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                            <select id="benefFilterProject" class="filter-select"><option value="all">Tous les projets</option></select>
+                            <select id="benefFilterActivite" class="filter-select"><option value="all">Toutes les activités</option></select>
+                            <input type="text" id="benefSearchInput" class="filter-select" placeholder="🔍 Rechercher localité...">
+                            <button class="btn-outline" id="clearBenefFilters"><i class="fas fa-xmark"></i> Effacer</button>
+                        </div>
+                    </div>
+                    <div class="card-panel">
+                        <div style="overflow-x:auto;">
+                            <table class="benef-table">
+                                <thead><tr><th>Projet</th><th>Activité</th><th>Localité</th><th>Total</th><th>Désagrégation</th><th>Handicapés</th><th>Actions</th></tr></thead>
+                                <tbody id="benefTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ÉVALUATIONS -->
+                <div id="evaluationsPage" class="page">
+                    <div class="flex-between">
+                        <h2>Évaluations</h2>
+                        <button class="btn-primary" id="addEvalBtn"><i class="fas fa-plus"></i> Nouvelle évaluation</button>
+                    </div>
+                    <div class="card-panel" style="margin-bottom:16px;padding:14px 18px;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                            <select id="evalProjectFilter" class="filter-select"><option value="all">Tous les projets</option></select>
+                        </div>
+                    </div>
+                    <div class="card-panel">
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead><tr><th>Titre</th><th>Projet</th><th>Type</th><th>Score</th><th>Période</th><th>Recommandations</th><th>Actions</th></tr></thead>
+                                <tbody id="evalTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INDICATEURS -->
+                <div id="indicateursPage" class="page">
+                    <div class="flex-between">
+                        <h2>Indicateurs & Résultats</h2>
+                        <button class="btn-primary" id="addIndicateurBtn"><i class="fas fa-plus"></i> Nouvel indicateur</button>
+                    </div>
+                    <div class="card-panel" style="margin-bottom:16px;padding:14px 18px;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                            <select id="indicateurProjectFilter" class="filter-select"><option value="all">Tous les projets</option></select>
+                        </div>
+                    </div>
+                    <div class="card-panel">
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Projet</th>
+                                        <th>Indicateur</th>
+                                        <th>Unité</th>
+                                        <th>Cible</th>
+                                        <th>Réalisé</th>
+                                        <th>Progression</th>
+                                        <th>Période</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="indicateurTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEEDBACK -->
+                <div id="feedbackPage" class="page">
+                    <div class="flex-between">
+                        <h2>Feedback & Redevabilité</h2>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn-primary" id="addFeedbackBtn"><i class="fas fa-plus"></i> Ajouter</button>
+                            <button class="btn-primary btn-amber" id="importFeedbackBtn"><i class="fas fa-file-excel"></i> Importer plaintes</button>
+                        </div>
+                    </div>
+                    <div class="card-panel" style="margin-bottom:16px;padding:14px 18px;">
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                            <select id="feedbackProjectFilter" class="filter-select"><option value="all">Tous les projets</option></select>
+                            <select id="feedbackStatusFilter" class="filter-select">
+                                <option value="all">Tous les statuts</option>
+                                <option value="Fermé">Fermé</option>
+                                <option value="Ouvert">Ouvert</option>
+                            </select>
+                            <select id="feedbackCategoryFilter" class="filter-select">
+                                <option value="all">Toutes les catégories</option>
+                                <option value="Remerciement">Remerciement</option>
+                                <option value="Doléance">Doléance</option>
+                                <option value="Réclamation">Réclamation</option>
+                                <option value="Question">Question</option>
+                                <option value="Satisfaction">Satisfaction</option>
+                                <option value="Préoccupation">Préoccupation</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-panel" id="feedbackList"></div>
+                </div>
+
+                <!-- RAPPORTS -->
+                <div id="rapportsPage" class="page">
+                    <h2>Rapports & Analytique</h2>
+                    <p>Visualisez et exportez les données de suivi-évaluation</p>
+                    <div class="card-panel" style="margin-top:20px;">
+                        <h4><i class="fas fa-chart-column" style="color:var(--navy-700);"></i> Performance par projet</h4>
+                        <div><canvas id="projectPerformanceChart" height="250"></canvas></div>
+                    </div>
+                    <div class="card-panel">
+                        <h4><i class="fas fa-chart-simple" style="color:var(--amber-500);"></i> Évolution des activités</h4>
+                        <div><canvas id="evolutionChart" height="200"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- DEBUG -->
+                <div id="debugPage" class="page">
+                    <h2>Console de débogage</h2>
+                    <p>Outils techniques de diagnostic</p>
+                    <div class="card-panel" style="margin-top:20px;">
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                            <button class="btn-primary btn-sm" id="debugTestSupabase"><i class="fas fa-cloud"></i> Tester Supabase</button>
+                            <button class="btn-primary btn-sm" id="debugTestProject"><i class="fas fa-plus"></i> Créer projet test</button>
+                            <button class="btn-primary btn-sm btn-danger" id="debugClearData"><i class="fas fa-trash"></i> Effacer données</button>
+                            <button class="btn-primary btn-sm" id="debugForceSync"><i class="fas fa-rotate"></i> Forcer synchro</button>
+                            <button class="btn-primary btn-sm" id="debugViewLocalData"><i class="fas fa-database"></i> Voir locales</button>
+                        </div>
+                        <div class="debug-panel" id="debugLogs"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="genericModal" class="modal"><div class="modal-content" id="modalContent"></div></div>
+    <div id="toast" class="toast"></div>
+
+    <script>
+    (function() {
+        const SUPABASE_URL = 'https://tnzxwswgezofuamodnqm.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_iPCkB9P4zs1Ii3j6ugl7RA_3VLiZutZ';
+        const APP_VERSION = '3.2.0';
+
+        let supabaseClient = null;
+        let realtimeChannel = null;
+        let currentUser = null;
+        let isReadOnly = false;
+        let projects = [], currentProjectId = null;
+        let feedbacks = [];
+        let isSaving = false;
+        let isLoadingFromCloud = false;
+        let saveTimeout = null;
+        // IDs vraiment supprimés par l'utilisateur (pour sync ciblée)
+        let deletedIds = {
+            projects: new Set(),
+            activites: new Set(),
+            beneficiaires: new Set(),
+            evaluations: new Set(),
+            feedbacks: new Set()
+        };
+
+        const PROFILS = ['Communauté hôte','PDI (Personne Déplacée Interne)','Sinistré','Réfugié','Retourné','Autre'];
+
+        // INDEXEDDB
+        const DB_NAME = 'eamprogres_db';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'appdata';
+        let idbInstance = null;
+
+        function openIDB() {
+            return new Promise((resolve, reject) => {
+                if (idbInstance) return resolve(idbInstance);
+                const req = indexedDB.open(DB_NAME, DB_VERSION);
+                req.onupgradeneeded = (e) => {
+                    const d = e.target.result;
+                    if (!d.objectStoreNames.contains(STORE_NAME)) d.createObjectStore(STORE_NAME);
+                };
+                req.onsuccess = (e) => { idbInstance = e.target.result; resolve(idbInstance); };
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        async function idbSet(key, value) {
+            const db = await openIDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const req = tx.objectStore(STORE_NAME).put(value, key);
+                req.onsuccess = () => resolve(true);
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        async function idbGet(key) {
+            const db = await openIDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const req = tx.objectStore(STORE_NAME).get(key);
+                req.onsuccess = (e) => resolve(e.target.result);
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        // UTILITAIRES
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        function log(msg, lvl) {
+            lvl = lvl || 'info';
+            const c = document.getElementById('debugLogs');
+            if (c) {
+                const d = document.createElement('div');
+                const colors = { info: '#60a5fa', success: '#34d399', error: '#f87171', warn: '#fbbf24' };
+                d.innerHTML = '<span style="color:#64748b;">[' + new Date().toLocaleTimeString() + ']</span> <span style="color:' + (colors[lvl] || '#cbd5e1') + ';font-weight:700;">' + lvl.toUpperCase() + '</span> ' + msg;
+                c.appendChild(d);
+                c.scrollTop = c.scrollHeight;
+            }
+            console.log('[' + lvl + '] ' + msg);
+        }
+
+        function addEventListenerSafe(id, eventName, handler) {
+            const el = document.getElementById(id);
+            if (!el) return false;
+            el.addEventListener(eventName, handler);
+            return true;
+        }
+
+        function generateId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5); }
+
+        function showToast(msg, type) {
+            type = type || 'success';
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        // INITIALISATION
+        function initApp() {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('✅ Supabase initialisé:', SUPABASE_URL);
+
+            if (!window.firebaseAuth) {
+                window.addEventListener('firebaseReady', onFirebaseReady);
+            } else {
+                onFirebaseReady();
+            }
+        }
+
+        function onFirebaseReady() {
+            const { auth, onAuthStateChanged } = window.firebaseAuth;
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    isReadOnly = !!(user.isAnonymous || user.email === 'invite@eamprogres.org');
+                    showApp(user);
+                    if (supabaseClient) {
+                        loadAllFromSupabase(false);
+                        startRealtimeListener();
+                    }
+                } else {
+                    currentUser = null;
+                    isReadOnly = false;
+                    if (realtimeChannel) { supabaseClient.removeChannel(realtimeChannel); realtimeChannel = null; }
+                    showLogin();
+                }
+            });
+        }
+
+        // AUTHENTIFICATION
+        async function handleLogin(email, password) {
+            const { signInWithEmailAndPassword, auth } = window.firebaseAuth;
+            await signInWithEmailAndPassword(auth, email, password);
+        }
+
+        async function handleRegister(email, password) {
+            const { createUserWithEmailAndPassword, auth } = window.firebaseAuth;
+            await createUserWithEmailAndPassword(auth, email, password);
+        }
+
+        async function handleGuestLogin() {
+            const { signInAnonymously, auth } = window.firebaseAuth;
+            await signInAnonymously(auth);
+        }
+
+        async function handleLogout() {
+            const { signOut, auth } = window.firebaseAuth;
+            await signOut(auth);
+        }
+
+        // UI
+        function showLogin() {
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('registerPage').style.display = 'none';
+            document.getElementById('appWrapper').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('registerPage').style.display = 'flex';
+            document.getElementById('appWrapper').style.display = 'none';
+        }
+
+        function showApp(user) {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('registerPage').style.display = 'none';
+            document.getElementById('appWrapper').style.display = 'block';
+
+            const displayName = isReadOnly ? '👁️ Invité' : (user?.email || 'Utilisateur');
+            document.getElementById('userDisplayName').textContent = displayName;
+            document.getElementById('userNameDisplayTop').textContent = displayName;
+            document.getElementById('welcomeName').textContent = isReadOnly ? 'Invité' : (user?.email?.split('@')[0] || 'Utilisateur');
+            document.getElementById('readonlyBadge').style.display = isReadOnly ? 'inline-block' : 'none';
+            updateUIBasedOnRole();
+        }
+
+        function updateUIBasedOnRole() {
+            ['addProjectBtn','addActiviteBtn','addBenefBtn','importExcelBtn','exportBenefBtn','addEvalBtn','addFeedbackBtn','addIndicateurBtn','importActiviteBtn','importFeedbackBtn'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.disabled = isReadOnly;
+            });
+            document.querySelectorAll('.icon-action').forEach(el => {
+                el.style.opacity = isReadOnly ? '0.3' : '1';
+                el.style.pointerEvents = isReadOnly ? 'none' : 'auto';
+            });
+        }
+
+        function updateSyncStatus(state, text) {
+            const dot = document.getElementById('syncDot'); const label = document.getElementById('syncText');
+            if (dot) dot.className = 'dot ' + state;
+            if (label && text) label.textContent = text;
+            const dot2 = document.getElementById('syncStatusDot'); if (dot2) dot2.className = 'dot ' + (state === 'synced' ? 'green' : state === 'syncing' ? 'orange' : 'red');
+            const st = document.getElementById('syncStatusText'); if (st && text) st.textContent = (state === 'synced' ? '✅ ' : state === 'syncing' ? '⏳ ' : '❌ ') + text;
+        }
+
+        // CHARGEMENT SUPABASE
+        async function loadAllFromSupabase(showNotifications) {
+            if (!supabaseClient) return;
+            if (isLoadingFromCloud) return;
+            isLoadingFromCloud = true;
+            try {
+                console.log('🔍 Chargement depuis Supabase...');
+                
+                const projRes = await supabaseClient.from('projects').select('*');
+                if (projRes.error) { console.error('❌ projects:', projRes.error); throw projRes.error; }
+                
+                const actRes = await supabaseClient.from('activites').select('*');
+                if (actRes.error) { console.error('❌ activites:', actRes.error); throw actRes.error; }
+                
+                const benefRes = await supabaseClient.from('beneficiaires').select('*');
+                if (benefRes.error) { console.error('❌ beneficiaires:', benefRes.error); throw benefRes.error; }
+                
+                const evalRes = await supabaseClient.from('evaluations').select('*');
+                if (evalRes.error) { console.error('❌ evaluations:', evalRes.error); throw evalRes.error; }
+                
+                const fbRes = await supabaseClient.from('feedbacks').select('*');
+                if (fbRes.error) { console.error('❌ feedbacks:', fbRes.error); throw fbRes.error; }
+
+                const newProjects = (projRes.data || []).map(p => {
+                    const pActivites = (actRes.data || []).filter(a => a.projet_id === p.id).map(a => ({ 
+                        id: a.id, nom: a.nom, type: a.type, statut: a.statut, date_debut: a.date_debut, date_fin: a.date_fin, cible: a.cible, atteint: a.atteint, progression: a.progression, commentaire: a.commentaire, projetId: a.projet_id 
+                    }));
+                    const pBeneficiaires = (benefRes.data || []).filter(b => b.projet_id === p.id).map(b => ({ 
+                        id: b.id, nom: b.nom, contact: b.contact, localite: b.localite, genre: b.genre, age: b.age, profil: b.profil, handicap: b.handicap, type_handicap: b.type_handicap, handicap_hommes: b.handicap_hommes||0, handicap_femmes: b.handicap_femmes||0, handicap_garcons: b.handicap_garcons||0, handicap_filles: b.handicap_filles||0, date_debut: b.date_debut, date_fin: b.date_fin, statut: b.statut, activiteId: b.activite_id, projetId: b.projet_id 
+                    }));
+                    const pEvaluations = (evalRes.data || []).filter(e => e.projet_id === p.id).map(e => ({ 
+                        id: e.id, titre: e.titre, type: e.type, score: e.score, date_debut: e.date_debut, date_fin: e.date_fin, recommandations: e.recommandations, projetId: e.projet_id 
+                    }));
+                    return { 
+                        id: p.id, code: p.code, nom: p.nom, region: p.region, pays: p.pays, statut: p.statut, budget: p.budget, date_debut: p.date_debut, date_fin: p.date_fin, description: p.description, createdAt: p.created_at, 
+                        activites: pActivites, beneficiaires: pBeneficiaires, evaluations: pEvaluations, indicateurs: [] 
+                    };
+                });
+
+                const newFeedbacks = (fbRes.data || []).map(f => ({ 
+                    id: f.id, projetId: f.projet_id, date: f.date, date_cloture: f.date_cloture,
+                    canal: f.canal, categorie: f.categorie, retour: f.retour, nom: f.nom, contact: f.contact,
+                    sexe: f.sexe, age: f.age, handicap: f.handicap, programme: f.programme, adresse_a: f.adresse_a,
+                    action: f.action, statut: f.statut, repondant: f.repondant, village: f.village, commentaire: f.commentaire 
+                }));
+
+                projects = newProjects;
+                feedbacks = newFeedbacks;
+
+                if (!currentProjectId && projects.length > 0) currentProjectId = projects[0].id;
+                if (currentProjectId && !projects.find(p => p.id === currentProjectId)) currentProjectId = projects.length > 0 ? projects[0].id : null;
+
+                await saveToLocalStorage();
+                refreshUI();
+                updateSyncStatus('synced', 'Temps réel actif');
+                console.log('✅ Chargement OK: Projets=' + projects.length + ', Feedbacks=' + feedbacks.length);
+            } catch (e) {
+                console.error('❌ Erreur chargement:', e);
+                updateSyncStatus('error', 'Erreur chargement: ' + (e.message || ''));
+            } finally {
+                isLoadingFromCloud = false;
+            }
+        }
+
+        // SAUVEGARDE SUPABASE
+        async function saveToSupabase() {
+            if (!supabaseClient || isReadOnly) return;
+            if (isLoadingFromCloud || isSaving) return;
+            
+            isSaving = true;
+            updateSyncStatus('syncing', 'Synchronisation...');
+
+            try {
+                // 1. Préparer les données
+                const projs = projects.map(p => ({
+                    id: p.id, code: p.code, nom: p.nom, region: p.region, pays: p.pays,
+                    statut: p.statut, budget: p.budget || 0,
+                    date_debut: p.date_debut || null, date_fin: p.date_fin || null,
+                    description: p.description, updated_at: new Date().toISOString()
+                }));
+
+                const acts = [];
+                projects.forEach(p => p.activites.forEach(a => acts.push({
+                    id: a.id, projet_id: p.id, nom: a.nom, type: a.type, statut: a.statut,
+                    date_debut: a.date_debut || null, date_fin: a.date_fin || null,
+                    cible: a.cible || 0, atteint: a.atteint || 0, progression: a.progression || 0,
+                    commentaire: a.commentaire
+                })));
+
+                const bens = [];
+                projects.forEach(p => p.beneficiaires.forEach(b => bens.push({
+                    id: b.id, projet_id: p.id, activite_id: b.activiteId || null,
+                    nom: b.nom, contact: b.contact, localite: b.localite, genre: b.genre,
+                    age: parseInt(b.age) || null, profil: b.profil,
+                    handicap: b.handicap || 'non', type_handicap: b.type_handicap,
+                    handicap_hommes: b.handicap_hommes || 0, handicap_femmes: b.handicap_femmes || 0,
+                    handicap_garcons: b.handicap_garcons || 0, handicap_filles: b.handicap_filles || 0,
+                    date_debut: b.date_debut || null, date_fin: b.date_fin || null,
+                    statut: b.statut || 'actif'
+                })));
+
+                const evals = [];
+                projects.forEach(p => p.evaluations.forEach(e => evals.push({
+                    id: e.id, projet_id: p.id, titre: e.titre, type: e.type, score: e.score || 0,
+                    date_debut: e.date_debut || null, date_fin: e.date_fin || null,
+                    recommandations: e.recommandations
+                })));
+
+                const fbs = feedbacks.map(f => ({
+                    id: f.id, projet_id: f.projetId, date: f.date || null, date_cloture: f.date_cloture || null,
+                    canal: f.canal, categorie: f.categorie, retour: f.retour, nom: f.nom, contact: f.contact,
+                    sexe: f.sexe, age: f.age || null, handicap: f.handicap, programme: f.programme,
+                    adresse_a: f.adresse_a, action: f.action, statut: f.statut,
+                    repondant: f.repondant, village: f.village, commentaire: f.commentaire
+                }));
+
+                // 2. Upserts avec gestion d'erreur par table
+                const results = [];
+
+                if (projs.length) {
+                    const r = await supabaseClient.from('projects').upsert(projs);
+                    results.push({ table: 'projects', error: r.error });
+                    if (r.error) console.error('❌ upsert projects:', r.error);
+                }
+                if (acts.length) {
+                    const r = await supabaseClient.from('activites').upsert(acts);
+                    results.push({ table: 'activites', error: r.error });
+                    if (r.error) console.error('❌ upsert activites:', r.error);
+                }
+                if (bens.length) {
+                    for (let i = 0; i < bens.length; i += 400) {
+                        const r = await supabaseClient.from('beneficiaires').upsert(bens.slice(i, i + 400));
+                        if (r.error) {
+                            results.push({ table: 'beneficiaires', error: r.error });
+                            console.error('❌ upsert beneficiaires:', r.error);
+                        }
+                    }
+                }
+                if (evals.length) {
+                    const r = await supabaseClient.from('evaluations').upsert(evals);
+                    results.push({ table: 'evaluations', error: r.error });
+                    if (r.error) console.error('❌ upsert evaluations:', r.error);
+                }
+                if (fbs.length) {
+                    const r = await supabaseClient.from('feedbacks').upsert(fbs);
+                    results.push({ table: 'feedbacks', error: r.error });
+                    if (r.error) console.error('❌ upsert feedbacks:', r.error);
+                }
+
+                // 3. Suppression ciblée uniquement des IDs vraiment supprimés par l'utilisateur
+                const deleteByIds = async (table, ids) => {
+                    if (!ids || ids.size === 0) return null;
+                    const idArray = Array.from(ids);
+                    for (let i = 0; i < idArray.length; i += 200) {
+                        const chunk = idArray.slice(i, i + 200);
+                        const r = await supabaseClient.from(table).delete().in('id', chunk);
+                        if (r.error) return r.error;
+                    }
+                    return null;
+                };
+
+                const delErrors = [];
+                delErrors.push(await deleteByIds('projects', deletedIds.projects));
+                delErrors.push(await deleteByIds('activites', deletedIds.activites));
+                delErrors.push(await deleteByIds('beneficiaires', deletedIds.beneficiaires));
+                delErrors.push(await deleteByIds('evaluations', deletedIds.evaluations));
+                delErrors.push(await deleteByIds('feedbacks', deletedIds.feedbacks));
+
+                // Vider les listes après tentative de suppression
+                deletedIds.projects.clear();
+                deletedIds.activites.clear();
+                deletedIds.beneficiaires.clear();
+                deletedIds.evaluations.clear();
+                deletedIds.feedbacks.clear();
+
+                // 4. Vérifier les erreurs
+                const hasError = results.some(r => r.error) || delErrors.some(e => e);
+                if (hasError) {
+                    console.error('Erreurs de synchro:', results, delErrors);
+                    updateSyncStatus('error', 'Erreur partielle de synchronisation');
+                    showToast("Certaines données n'ont pas pu être synchronisées", "error");
+                } else {
+                    updateSyncStatus('synced', 'Synchronisé');
+                    console.log('✅ Sauvegarde OK');
+                }
+
+                await saveToLocalStorage();
+
+            } catch (e) {
+                console.error('❌ Erreur sauvegarde:', e);
+                updateSyncStatus('error', 'Erreur: ' + (e.message || ''));
+                showToast('Erreur de synchronisation', 'error');
+            } finally {
+                isSaving = false;
+            }
+        }
+
+        function startRealtimeListener() {
+            if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+            if (!supabaseClient) return;
+            realtimeChannel = supabaseClient.channel('realtime-' + Date.now());
+            ['projects', 'activites', 'beneficiaires', 'evaluations', 'feedbacks'].forEach(t => {
+                realtimeChannel.on('postgres_changes', { event: '*', schema: 'public', table: t }, () => {
+                    if (isSaving || isLoadingFromCloud) return;
+                    if (saveTimeout) clearTimeout(saveTimeout);
+                    // Debounce plus long pour éviter les rechargements trop fréquents
+                    saveTimeout = setTimeout(() => {
+                        if (!isSaving && !isLoadingFromCloud) loadAllFromSupabase(true);
+                    }, 1800);
+                });
+            });
+            realtimeChannel.subscribe(status => {
+                if (status === 'SUBSCRIBED') updateSyncStatus('synced', 'Temps réel actif');
+                else if (status === 'CHANNEL_ERROR') updateSyncStatus('error', 'Erreur temps réel');
+            });
+        }
+
+        async function loadFromLocalStorage() {
+            try {
+                const data = await idbGet('main_data');
+                if (data && data.projects) {
+                    projects = data.projects;
+                    feedbacks = data.feedbacks || [];
+                    currentProjectId = data.currentProjectId || (projects.length > 0 ? projects[0].id : null);
+                    refreshUI();
+                    return true;
+                }
+                return false;
+            } catch (e) { return false; }
+        }
+
+        async function saveToLocalStorage() {
+            try { await idbSet('main_data', { projects, feedbacks, currentProjectId, updatedAt: new Date().toISOString() }); } catch (e) {}
+        }
+
+        function saveAll() {
+            try { refreshUI(); } catch (e) {}
+            saveToLocalStorage();
+            if (supabaseClient && !isReadOnly) {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => saveToSupabase(), 1500);
+            }
+        }
+
+        function updateSyncBanner() {
+            document.getElementById('localDataCount').textContent = projects.length;
+            const bc = document.getElementById('cloudDataCount');
+            if (bc) bc.textContent = projects.reduce((s, p) => s + (p.beneficiaires?.length || 0), 0);
+        }
+
+        function getCurrentProject() { return projects.find(p => p.id === currentProjectId) || null; }
+
+        // FILTRES
+        function getFilteredProjects() {
+            const f = document.getElementById('projectCountryFilterInput')?.value.toLowerCase() || '';
+            return f ? projects.filter(p => (p.pays || '').toLowerCase().includes(f)) : projects;
+        }
+
+        function getFilteredActivites() {
+            const pf = document.getElementById('activiteProjectFilter')?.value || 'all';
+            const all = [];
+            projects.forEach(p => p.activites.forEach(a => all.push({ ...a, projetNom: p.nom, projetCode: p.code })));
+            return pf === 'all' ? all : all.filter(a => a.projetId === pf);
+        }
+
+        function getFilteredBeneficiaires() {
+            const pf = document.getElementById('benefFilterProject')?.value || 'all';
+            const af = document.getElementById('benefFilterActivite')?.value || 'all';
+            const s = document.getElementById('benefSearchInput')?.value.toLowerCase() || '';
+            const all = [];
+            projects.forEach(p => p.beneficiaires.forEach(b => all.push({ ...b, projetNom: p.nom, projetCode: p.code })));
+            let f = all;
+            if (pf !== 'all') f = f.filter(b => b.projetId === pf);
+            if (af !== 'all') f = f.filter(b => b.activiteId === af);
+            if (s) f = f.filter(b => (b.localite || '').toLowerCase().includes(s));
+            return f;
+        }
+
+        function getFilteredEvaluations() {
+            const pf = document.getElementById('evalProjectFilter')?.value || 'all';
+            const all = [];
+            projects.forEach(p => p.evaluations.forEach(e => all.push({ ...e, projetNom: p.nom, projetCode: p.code })));
+            return pf === 'all' ? all : all.filter(e => e.projetId === pf);
+        }
+
+        function getFilteredFeedbacks() {
+            const pf = document.getElementById('feedbackProjectFilter')?.value || 'all';
+            const sf = document.getElementById('feedbackStatusFilter')?.value || 'all';
+            const cf = document.getElementById('feedbackCategoryFilter')?.value || 'all';
+            let f = feedbacks.map(fb => {
+                const p = projects.find(p => p.id === fb.projetId);
+                return { ...fb, projetNom: p?.nom || '—', projetCode: p?.code || '—' };
+            });
+            if (pf !== 'all') f = f.filter(fb => fb.projetId === pf);
+            if (sf !== 'all') f = f.filter(fb => fb.statut === sf);
+            if (cf !== 'all') f = f.filter(fb => fb.categorie === cf);
+            return f;
+        }
+
+        function aggregateBeneficiaires(beneficiaires) {
+            const g = {};
+            beneficiaires.forEach(b => {
+                const aid = b.activiteId || 'sans_activite';
+                const key = b.localite + '|' + aid;
+                if (!g[key]) {
+                    let actNom = 'Sans activité';
+                    if (b.activiteId) {
+                        const proj = projects.find(p => p.id === b.projetId);
+                        const act = proj?.activites.find(a => a.id === b.activiteId);
+                        if (act) actNom = act.nom;
+                    }
+                    g[key] = { localite: b.localite, activiteId: aid, activiteNom: actNom, total: 0, hommes: 0, femmes: 0, filles: 0, garcons: 0, handicapes: 0, projetId: b.projetId, projetNom: b.projetNom, projetCode: b.projetCode };
+                }
+                const x = g[key];
+                x.total++;
+                if (b.genre === 'Homme') x.hommes++;
+                else if (b.genre === 'Femme') x.femmes++;
+                else if (b.genre === 'Fille') x.filles++;
+                else if (b.genre === 'Garçon') x.garcons++;
+                if (b.handicap === 'oui') x.handicapes++;
+            });
+            return Object.values(g);
+        }
+
+        function getBadge(s) {
+            const m = { 'réalisé': '<span class="badge badge-success">Réalisé</span>', 'encours': '<span class="badge badge-warning">En cours</span>', 'planifié': '<span class="badge badge-info">Planifié</span>' };
+            return m[s] || '<span class="badge badge-secondary">' + s + '</span>';
+        }
+
+        function getCategorieFb(type) {
+            const c = { 'Remerciement':'badge-success','Doléance':'badge-warning','Réclamation':'badge-danger','Question':'badge-info','Satisfaction':'badge-success','Préoccupation':'badge-warning' };
+            return c[type] || 'badge-secondary';
+        }
+
+        // RENDU UI
+        function refreshUI() {
+            try {
+                let nbB = 0, nbE = 0, nbHomme = 0, nbFemme = 0, nbFille = 0, nbGarcon = 0, nbHandicap = 0;
+                projects.forEach(p => {
+                    nbE += p.evaluations.length;
+                    p.beneficiaires.forEach(b => {
+                        nbB++;
+                        if (b.genre === 'Homme') nbHomme++;
+                        else if (b.genre === 'Femme') nbFemme++;
+                        else if (b.genre === 'Garçon') nbGarcon++;
+                        else if (b.genre === 'Fille') nbFille++;
+                        if (b.handicap === 'oui') nbHandicap++;
+                    });
+                });
+                
+                document.getElementById('statProjets').innerText = projects.length;
+                document.getElementById('statBenef').innerText = nbB;
+                document.getElementById('statEvals').innerText = nbE;
+                document.getElementById('statFeedbacks').innerText = feedbacks.length;
+
+                const ds = document.getElementById('disaggSummary');
+                const dg = document.getElementById('disaggGrid');
+                if (nbB > 0) {
+                    ds.style.display = 'block';
+                    dg.innerHTML = 
+                        '<div class="stat-disagg-item"><span class="number disagg-homme">' + nbHomme + '</span>Hommes</div>' +
+                        '<div class="stat-disagg-item"><span class="number disagg-femme">' + nbFemme + '</span>Femmes</div>' +
+                        '<div class="stat-disagg-item"><span class="number disagg-garcon">' + nbGarcon + '</span>Garçons</div>' +
+                        '<div class="stat-disagg-item"><span class="number disagg-fille">' + nbFille + '</span>Filles</div>' +
+                        '<div class="stat-disagg-item"><span class="number disagg-handicap">' + nbHandicap + '</span>Handicapés</div>';
+                } else ds.style.display = 'none';
+                
+                ['activiteProjectFilter','benefFilterProject','evalProjectFilter','feedbackProjectFilter'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        const cur = el.value;
+                        let opts = '<option value="all">Tous les projets</option>';
+                        projects.forEach(p => opts += '<option value="' + p.id + '" ' + (p.id === cur ? 'selected' : '') + '>' + escapeHtml(p.code) + '</option>');
+                        el.innerHTML = opts;
+                    }
+                });
+
+                const baf = document.getElementById('benefFilterActivite');
+                if (baf) {
+                    const cur = baf.value;
+                    const pf = document.getElementById('benefFilterProject')?.value || 'all';
+                    let opts = '<option value="all">Toutes les activités</option>';
+                    projects.forEach(p => {
+                        if (pf === 'all' || p.id === pf) {
+                            p.activites.forEach(a => opts += '<option value="' + a.id + '" ' + (a.id === cur ? 'selected' : '') + '>' + escapeHtml(a.nom) + '</option>');
+                        }
+                    });
+                    baf.innerHTML = opts;
+                }
+                
+                const grid = document.getElementById('projectGrid');
+                if (!projects.length) grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-folder-open"></i><p>Aucun projet. Cliquez sur « Nouveau projet » pour commencer.</p></div>';
+                else grid.innerHTML = projects.map(p => {
+                    const done = p.activites.filter(a => a.statut === 'réalisé').length;
+                    const prog = p.activites.length ? Math.round(done / p.activites.length * 100) : 0;
+                    return '<div class="project-card" onclick="selectProject(\'' + p.id + '\')">' +
+                        '<div class="project-actions">' +
+                            '<i class="fas fa-pen icon-action" onclick="event.stopPropagation(); editProject(\'' + p.id + '\')"></i>' +
+                            '<i class="fas fa-trash icon-action" onclick="event.stopPropagation(); deleteProject(\'' + p.id + '\')" style="color:var(--danger);"></i>' +
+                        '</div>' +
+                        '<div class="project-code">' + escapeHtml(p.code) + '</div>' +
+                        '<div class="project-title">' + escapeHtml(p.nom) + '</div>' +
+                        '<div class="project-meta">' +
+                            '<span><i class="fas fa-location-dot"></i> ' + escapeHtml(p.region || 'N/A') + '</span>' +
+                            '<span><i class="fas fa-users"></i> ' + (p.beneficiaires?.length || 0) + '</span>' +
+                        '</div>' +
+                        '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--slate-500);margin-top:12px;font-weight:600;">' +
+                            '<span>Avancement</span><span>' + prog + '%</span>' +
+                        '</div>' +
+                        '<div style="width:100%;height:5px;background:var(--slate-100);border-radius:100px;overflow:hidden;margin-top:6px;">' +
+                            '<div style="height:100%;width:' + prog + '%;background:linear-gradient(90deg, var(--navy-700), var(--amber-500));border-radius:100px;"></div>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+                
+                const at = document.getElementById('activiteTbody');
+                const fa = getFilteredActivites();
+                if (!fa.length) at.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px 0;color:var(--slate-400);">Aucune activité</td></tr>';
+                else at.innerHTML = fa.map(a => '<tr>' +
+                    '<td><strong>' + escapeHtml(a.nom) + '</strong></td>' +
+                    '<td style="font-size:12px;color:var(--slate-500);">' + escapeHtml(a.projetCode) + '</td>' +
+                    '<td><span class="badge badge-info">' + a.type + '</span></td>' +
+                    '<td style="font-size:12px;">' + (a.date_debut || '—') + '</td>' +
+                    '<td style="font-size:12px;">' + (a.date_fin || '—') + '</td>' +
+                    '<td>' + getBadge(a.statut) + '</td>' +
+                    '<td style="text-align:center;font-weight:600;">' + (a.cible || 0) + '</td>' +
+                    '<td style="text-align:center;font-weight:600;">' + (a.atteint || 0) + '</td>' +
+                    '<td>' + (a.progression || 0) + '%</td>' +
+                    '<td>' +
+                        '<i class="fas fa-pen icon-action" data-action="edit-act" data-id="' + a.id + '"></i>' +
+                        '<i class="fas fa-trash icon-action" data-action="del-act" data-id="' + a.id + '" style="color:var(--danger);"></i>' +
+                    '</td>' +
+                '</tr>').join('');
+                
+                const bt = document.getElementById('benefTbody');
+                const fb = getFilteredBeneficiaires();
+                if (!fb.length) bt.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px 0;color:var(--slate-400);">Aucun bénéficiaire</td></tr>';
+                else {
+                    const grouped = aggregateBeneficiaires(fb);
+                    bt.innerHTML = grouped.map(g => '<tr>' +
+                        '<td><strong>' + escapeHtml(g.projetCode || '—') + '</strong></td>' +
+                        '<td><span class="badge badge-info">' + escapeHtml(g.activiteNom) + '</span></td>' +
+                        '<td style="font-weight:600;">' + escapeHtml(g.localite) + '</td>' +
+                        '<td><span class="total-benef">' + g.total + '</span></td>' +
+                        '<td style="font-size:12px;">' +
+                            '<span class="disagg-homme">' + g.hommes + 'H</span> · ' +
+                            '<span class="disagg-femme">' + g.femmes + 'F</span> · ' +
+                            '<span class="disagg-garcon">' + g.garcons + 'G</span> · ' +
+                            '<span class="disagg-fille">' + g.filles + 'Fi</span>' +
+                        '</td>' +
+                        '<td>' + (g.handicapes > 0 ? '<span class="badge badge-warning">' + g.handicapes + '</span>' : '0') + '</td>' +
+                        '<td>' +
+                            '<i class="fas fa-pen icon-action benef-edit-btn" data-localite="' + g.localite + '" data-activite="' + g.activiteId + '"></i>' +
+                            '<i class="fas fa-trash icon-action benef-del-btn" data-localite="' + g.localite + '" data-activite="' + g.activiteId + '" style="color:var(--danger);"></i>' +
+                        '</td>' +
+                    '</tr>').join('');
+                }
+                
+                const et = document.getElementById('evalTbody');
+                const fe = getFilteredEvaluations();
+                if (!fe.length) et.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px 0;color:var(--slate-400);">Aucune évaluation</td></tr>';
+                else et.innerHTML = fe.map(e => '<tr>' +
+                    '<td><strong>' + escapeHtml(e.titre) + '</strong></td>' +
+                    '<td>' + escapeHtml(e.projetCode) + '</td>' +
+                    '<td><span class="badge badge-purple">' + e.type + '</span></td>' +
+                    '<td><strong style="color:' + (e.score >= 70 ? 'var(--success)' : e.score >= 50 ? 'var(--amber-500)' : 'var(--danger)') + ';">' + e.score + '%</strong></td>' +
+                    '<td style="font-size:12px;">' + (e.date_debut || '—') + ' → ' + (e.date_fin || '—') + '</td>' +
+                    '<td style="font-size:12px;max-width:150px;">' + escapeHtml(e.recommandations || '—') + '</td>' +
+                    '<td>' +
+                        '<i class="fas fa-pen icon-action" data-action="edit-eval" data-id="' + e.id + '"></i>' +
+                        '<i class="fas fa-trash icon-action" data-action="del-eval" data-id="' + e.id + '" style="color:var(--danger);"></i>' +
+                    '</td>' +
+                '</tr>').join('');
+                
+                const fl = document.getElementById('feedbackList');
+                const fbf = getFilteredFeedbacks();
+                if (!fbf.length) fl.innerHTML = '<div class="empty-state"><i class="fas fa-comments"></i><p>Aucun feedback pour le moment.</p></div>';
+                else fl.innerHTML = fbf.map(f => '<div class="feedback-card" style="border-left-color:' + (f.statut === 'Fermé' ? 'var(--success)' : 'var(--amber-500)') + ';">' +
+                    '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;">' +
+                        '<div>' +
+                            '<span class="badge ' + getCategorieFb(f.categorie) + '">' + (f.categorie || '—') + '</span>' +
+                            '<span class="badge ' + (f.statut === 'Fermé' ? 'badge-success' : 'badge-warning') + '" style="margin-left:6px;">' + (f.statut || '—') + '</span>' +
+                            '<span style="font-size:12px;color:var(--slate-500);margin-left:12px;font-weight:600;">' + escapeHtml(f.projetCode || '—') + ' · ' + f.date + '</span>' +
+                        '</div>' +
+                        '<div>' +
+                            '<i class="fas fa-pen icon-action" data-action="edit-fb" data-id="' + f.id + '"></i>' +
+                            '<i class="fas fa-trash icon-action" data-action="del-fb" data-id="' + f.id + '" style="color:var(--danger);"></i>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="margin-top:6px;font-size:12px;color:var(--slate-500);">' +
+                        '<span><i class="fas fa-user"></i> ' + escapeHtml(f.nom || 'Anonyme') + '</span>' +
+                        '<span style="margin-left:12px;"><i class="fas fa-location-dot"></i> ' + escapeHtml(f.village || '—') + '</span>' +
+                    '</div>' +
+                    '<p style="margin-top:10px;font-size:14px;color:var(--slate-800);line-height:1.5;">' + escapeHtml(f.retour) + '</p>' +
+                    (f.action ? '<div style="margin-top:8px;padding:8px 12px;background:var(--navy-50);border-radius:var(--radius-sm);font-size:13px;color:var(--navy-800);"><strong>Action:</strong> ' + escapeHtml(f.action) + '</div>' : '') +
+                '</div>').join('');
+                
+                
+                // === Indicateurs ===
+                const indFilter = document.getElementById('indicateurProjectFilter');
+                if (indFilter) {
+                    const cur = indFilter.value;
+                    let opts = '<option value="all">Tous les projets</option>';
+                    projects.forEach(p => opts += '<option value="' + p.id + '" ' + (p.id === cur ? 'selected' : '') + '>' + escapeHtml(p.code) + '</option>');
+                    indFilter.innerHTML = opts;
+                }
+                const it = document.getElementById('indicateurTbody');
+                if (it) {
+                    let allInd = [];
+                    projects.forEach(p => {
+                        (p.indicateurs || []).forEach(ind => {
+                            allInd.push({ ...ind, projetCode: p.code, projetId: p.id });
+                        });
+                    });
+                    const pf = document.getElementById('indicateurProjectFilter')?.value || 'all';
+                    if (pf !== 'all') allInd = allInd.filter(i => i.projetId === pf);
+                    
+                    if (!allInd.length) {
+                        it.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px 0;color:var(--slate-400);">Aucun indicateur. Cliquez sur « Nouvel indicateur ».</td></tr>';
+                    } else {
+                        it.innerHTML = allInd.map(ind => {
+                            const prog = ind.cible > 0 ? Math.round((ind.realise || 0) / ind.cible * 100) : 0;
+                            const color = prog >= 80 ? 'var(--success)' : prog >= 50 ? 'var(--amber-500)' : 'var(--danger)';
+                            return '<tr>' +
+                                '<td><strong>' + escapeHtml(ind.projetCode) + '</strong></td>' +
+                                '<td>' + escapeHtml(ind.nom) + '</td>' +
+                                '<td>' + escapeHtml(ind.unite || '—') + '</td>' +
+                                '<td style="text-align:center;font-weight:600;">' + (ind.cible || 0) + '</td>' +
+                                '<td style="text-align:center;font-weight:600;">' + (ind.realise || 0) + '</td>' +
+                                '<td><strong style="color:' + color + ';">' + prog + '%</strong></td>' +
+                                '<td style="font-size:12px;">' + (ind.periode || '—') + '</td>' +
+                                '<td>' +
+                                    '<i class="fas fa-pen icon-action" data-action="edit-ind" data-id="' + ind.id + '"></i>' +
+                                    '<i class="fas fa-trash icon-action" data-action="del-ind" data-id="' + ind.id + '" style="color:var(--danger);"></i>' +
+                                '</td>' +
+                            '</tr>';
+                        }).join('');
+                    }
+                }
+
+                updateSyncBanner();
+            } catch (e) { console.error('UI Error:', e); }
+        }
+
+        function openModal(html) {
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('genericModal').classList.add('active');
+        }
+        function closeModal() { document.getElementById('genericModal').classList.remove('active'); }
+        window.closeModal = closeModal;
+        window.selectProject = function(id) { currentProjectId = id; saveAll(); showToast('Projet sélectionné', 'success'); };
+
+        // ============== CRUD BÉNÉFICIAIRES ==============
+        function editBeneficiaire(localite, activiteId) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            const project = projects.find(p => p.beneficiaires.some(b => b.localite === localite && b.activiteId === activiteId));
+            if (!project) return;
+            const benefs = project.beneficiaires.filter(b => b.localite === localite && b.activiteId === activiteId);
+            
+            let hommes = 0, femmes = 0, garcons = 0, filles = 0, handicapes = 0;
+            benefs.forEach(b => {
+                if (b.genre === 'Homme') hommes++;
+                else if (b.genre === 'Femme') femmes++;
+                else if (b.genre === 'Garçon') garcons++;
+                else if (b.genre === 'Fille') filles++;
+                if (b.handicap === 'oui') handicapes++;
+            });
+            
+            openModal(`
+                <h3>✏️ Modifier bénéficiaires - ${escapeHtml(localite)}</h3>
+                <div class="form-row-4">
+                    <div class="form-group"><label>Hommes</label><input type="number" id="fHommes" value="${hommes}" min="0"></div>
+                    <div class="form-group"><label>Femmes</label><input type="number" id="fFemmes" value="${femmes}" min="0"></div>
+                    <div class="form-group"><label>Garçons</label><input type="number" id="fGarcons" value="${garcons}" min="0"></div>
+                    <div class="form-group"><label>Filles</label><input type="number" id="fFilles" value="${filles}" min="0"></div>
+                </div>
+                <div class="form-group"><label>Handicapés</label><input type="number" id="fHandicapes" value="${handicapes}" min="0"></div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                    <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                    <button class="btn-primary" id="saveBenefGroupBtn">Mettre à jour</button>
+                </div>
+            `);
+            
+            document.getElementById('saveBenefGroupBtn').onclick = function() {
+                const nh = parseInt(document.getElementById('fHommes').value) || 0;
+                const nf = parseInt(document.getElementById('fFemmes').value) || 0;
+                const ng = parseInt(document.getElementById('fGarcons').value) || 0;
+                const nfi = parseInt(document.getElementById('fFilles').value) || 0;
+                const nhand = parseInt(document.getElementById('fHandicapes').value) || 0;
+                
+                project.beneficiaires = project.beneficiaires.filter(b => !(b.localite === localite && b.activiteId === activiteId));
+                
+                const ages = [25, 30, 35, 40, 45, 50];
+                let handIdx = 0;
+                for (let i = 0; i < nh; i++) { project.beneficiaires.push({ id: generateId(), nom: 'Bénéf', contact: '', localite, genre: 'Homme', age: ages[i%6].toString(), profil: 'Communauté hôte', handicap: handIdx < nhand ? 'oui' : 'non', type_handicap: handIdx < nhand ? 'Moteur' : '', handicap_hommes: 0, handicap_femmes: 0, handicap_garcons: 0, handicap_filles: 0, date_debut: new Date().toISOString().slice(0,10), date_fin: '', statut: 'actif', activiteId, projetId: project.id }); if (handIdx < nhand) handIdx++; }
+                for (let i = 0; i < nf; i++) { project.beneficiaires.push({ id: generateId(), nom: 'Bénéf', contact: '', localite, genre: 'Femme', age: ages[i%6].toString(), profil: 'Communauté hôte', handicap: handIdx < nhand ? 'oui' : 'non', type_handicap: handIdx < nhand ? 'Moteur' : '', handicap_hommes: 0, handicap_femmes: 0, handicap_garcons: 0, handicap_filles: 0, date_debut: new Date().toISOString().slice(0,10), date_fin: '', statut: 'actif', activiteId, projetId: project.id }); if (handIdx < nhand) handIdx++; }
+                for (let i = 0; i < ng; i++) { project.beneficiaires.push({ id: generateId(), nom: 'Bénéf', contact: '', localite, genre: 'Garçon', age: ages[i%6].toString(), profil: 'Communauté hôte', handicap: handIdx < nhand ? 'oui' : 'non', type_handicap: handIdx < nhand ? 'Moteur' : '', handicap_hommes: 0, handicap_femmes: 0, handicap_garcons: 0, handicap_filles: 0, date_debut: new Date().toISOString().slice(0,10), date_fin: '', statut: 'actif', activiteId, projetId: project.id }); if (handIdx < nhand) handIdx++; }
+                for (let i = 0; i < nfi; i++) { project.beneficiaires.push({ id: generateId(), nom: 'Bénéf', contact: '', localite, genre: 'Fille', age: ages[i%6].toString(), profil: 'Communauté hôte', handicap: handIdx < nhand ? 'oui' : 'non', type_handicap: handIdx < nhand ? 'Moteur' : '', handicap_hommes: 0, handicap_femmes: 0, handicap_garcons: 0, handicap_filles: 0, date_debut: new Date().toISOString().slice(0,10), date_fin: '', statut: 'actif', activiteId, projetId: project.id }); if (handIdx < nhand) handIdx++; }
+                
+                const actRef = project.activites.find(a => a.id === activiteId);
+                if (actRef) actRef.atteint = project.beneficiaires.filter(b => b.activiteId === activiteId).length;
+                
+                saveAll();
+                closeModal();
+                showToast('✅ Bénéficiaires mis à jour', 'success');
+            };
+        }
+        window.editBeneficiaire = editBeneficiaire;
+
+        function deleteBeneficiaireByLocalite(localite, activiteId) {
+            if (isReadOnly) return;
+            const project = projects.find(p => p.beneficiaires.some(b => b.localite === localite && b.activiteId === activiteId));
+            if (!project) return;
+            if (!confirm('Supprimer les bénéficiaires de "' + localite + '" ?')) return;
+            // Enregistrer les IDs à supprimer
+            project.beneficiaires
+                .filter(b => b.localite === localite && b.activiteId === activiteId)
+                .forEach(b => deletedIds.beneficiaires.add(b.id));
+            project.beneficiaires = project.beneficiaires.filter(b => !(b.localite === localite && b.activiteId === activiteId));
+            const act = project.activites.find(a => a.id === activiteId);
+            if (act) act.atteint = project.beneficiaires.filter(b => b.activiteId === activiteId).length;
+            saveAll();
+            showToast('🗑️ Supprimés', 'success');
+        }
+        window.deleteBeneficiaireByLocalite = deleteBeneficiaireByLocalite;
+
+        // ============== CRUD PROJETS ==============
+        function editProject(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            var p = projects.find(pr => pr.id === id); if (!p) return;
+            openModal(`
+                <h3>✏️ Modifier le projet</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Code projet <span class="required">*</span></label><input id="fCode" value="${p.code}"></div>
+                    <div class="form-group"><label>Nom du projet <span class="required">*</span></label><input id="fNom" value="${p.nom}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Région</label><input id="fRegion" value="${p.region || ''}"></div>
+                    <div class="form-group"><label>Pays</label><input id="fPays" value="${p.pays || ''}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Statut</label>
+                        <select id="fStatut">
+                            <option value="actif" ${p.statut==='actif'?'selected':''}>Actif</option>
+                            <option value="planifié" ${p.statut==='planifié'?'selected':''}>Planifié</option>
+                            <option value="terminé" ${p.statut==='terminé'?'selected':''}>Terminé</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Budget (CFA)</label><input type="number" id="fBudget" value="${p.budget}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date de début</label><input type="date" id="fDateDebut" value="${p.date_debut}"></div>
+                    <div class="form-group"><label>Date de fin</label><input type="date" id="fDateFin" value="${p.date_fin||''}"></div>
+                </div>
+                <div class="form-group"><label>Description</label><textarea id="fDescription" rows="2">${p.description||''}</textarea></div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                    <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                    <button class="btn-primary" id="saveProjectBtn">Mettre à jour</button>
+                </div>
+            `);
+            document.getElementById('saveProjectBtn').onclick = function() {
+                var idx = projects.findIndex(pr => pr.id === p.id);
+                projects[idx] = { ...p, code: document.getElementById('fCode').value.trim(), nom: document.getElementById('fNom').value.trim(), region: document.getElementById('fRegion').value.trim(), pays: document.getElementById('fPays').value.trim(), statut: document.getElementById('fStatut').value, budget: parseInt(document.getElementById('fBudget').value) || 0, date_debut: document.getElementById('fDateDebut').value, date_fin: document.getElementById('fDateFin').value || '', description: document.getElementById('fDescription').value };
+                saveAll(); closeModal(); showToast('Projet mis à jour', 'success');
+            };
+        }
+        window.editProject = editProject;
+
+        function deleteProject(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            if (confirm('Supprimer ce projet et toutes ses données ?')) {
+                // Enregistrer les IDs à supprimer côté cloud
+                deletedIds.projects.add(id);
+                const proj = projects.find(p => p.id === id);
+                if (proj) {
+                    proj.activites.forEach(a => deletedIds.activites.add(a.id));
+                    proj.beneficiaires.forEach(b => deletedIds.beneficiaires.add(b.id));
+                    proj.evaluations.forEach(e => deletedIds.evaluations.add(e.id));
+                }
+                feedbacks.filter(f => f.projetId === id).forEach(f => deletedIds.feedbacks.add(f.id));
+
+                projects = projects.filter(p => p.id !== id);
+                feedbacks = feedbacks.filter(f => f.projetId !== id);
+                if (currentProjectId === id) currentProjectId = projects.length > 0 ? projects[0].id : null;
+                saveAll(); showToast('Projet supprimé', 'success');
+            }
+        }
+        window.deleteProject = deleteProject;
+
+        // ============== CRUD ACTIVITÉS ==============
+        function editActivite(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            let targetProject = null, act = null;
+            for (let i = 0; i < projects.length; i++) {
+                let found = projects[i].activites.find(a => a.id === id);
+                if (found) { targetProject = projects[i]; act = found; break; }
+            }
+            if (!targetProject || !act) return;
+            openModal(`
+                <h3>✏️ Modifier l'activité</h3>
+                <div class="form-group"><label>Projet</label><select id="fProjetId">${projects.map(p => `<option value="${p.id}" ${p.id === targetProject.id ? 'selected' : ''}>${p.code} - ${p.nom}</option>`).join('')}</select></div>
+                <div class="form-group"><label>Nom <span class="required">*</span></label><input id="fNom" value="${act.nom}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Type</label><select id="fType"><option value="supervision" ${act.type==='supervision'?'selected':''}>Supervision</option><option value="formation" ${act.type==='formation'?'selected':''}>Formation</option><option value="coordination" ${act.type==='coordination'?'selected':''}>Coordination</option><option value="construction" ${act.type==='construction'?'selected':''}>Construction</option><option value="distribution" ${act.type==='distribution'?'selected':''}>Distribution</option><option value="rehabilitation" ${act.type==='rehabilitation'?'selected':''}>Réhabilitation</option><option value="autre" ${act.type==='autre'?'selected':''}>Autre</option></select></div>
+                    <div class="form-group"><label>Statut</label><select id="fStatut"><option value="planifié" ${act.statut==='planifié'?'selected':''}>Planifié</option><option value="encours" ${act.statut==='encours'?'selected':''}>En cours</option><option value="réalisé" ${act.statut==='réalisé'?'selected':''}>Réalisé</option></select></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date de début</label><input type="date" id="fDateDebut" value="${act.date_debut || ''}"></div>
+                    <div class="form-group"><label>Date de fin</label><input type="date" id="fDateFin" value="${act.date_fin || ''}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Cible</label><input type="number" id="fCible" value="${act.cible||0}" min="0"></div>
+                    <div class="form-group"><label>Atteint</label><input type="number" id="fAtteint" value="${act.atteint||0}" min="0"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Progression (%)</label><input type="number" id="fProgression" value="${act.progression||0}" min="0" max="100"></div>
+                    <div class="form-group"><label>Commentaire</label><input id="fCommentaire" value="${act.commentaire||''}"></div>
+                </div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                    <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                    <button class="btn-primary" id="saveActBtn">Mettre à jour</button>
+                </div>
+            `);
+            document.getElementById('saveActBtn').onclick = function() {
+                let newProjetId = document.getElementById('fProjetId').value;
+                let nom = document.getElementById('fNom').value.trim();
+                if (!nom) { showToast('Nom obligatoire.', 'error'); return; }
+                let oldProj = projects.find(p => p.id === targetProject.id);
+                if (oldProj) { let idx = oldProj.activites.findIndex(a => a.id === act.id); if (idx !== -1) oldProj.activites.splice(idx, 1); }
+                let newProj = projects.find(p => p.id === newProjetId);
+                if (newProj) {
+                    newProj.activites.push({ ...act, nom: nom, type: document.getElementById('fType').value, statut: document.getElementById('fStatut').value, date_debut: document.getElementById('fDateDebut').value, date_fin: document.getElementById('fDateFin').value, cible: parseInt(document.getElementById('fCible').value) || 0, atteint: parseInt(document.getElementById('fAtteint').value) || 0, progression: parseInt(document.getElementById('fProgression').value) || 0, commentaire: document.getElementById('fCommentaire').value, projetId: newProjetId });
+                }
+                saveAll(); closeModal(); showToast('Activité mise à jour', 'success');
+            };
+        }
+        window.editActivite = editActivite;
+
+        function deleteActivite(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            if (confirm('Supprimer cette activité ?')) {
+                deletedIds.activites.add(id);
+                for (let i = 0; i < projects.length; i++) {
+                    let idx = projects[i].activites.findIndex(a => a.id === id);
+                    if (idx !== -1) { projects[i].activites.splice(idx, 1); break; }
+                }
+                saveAll(); showToast('Activité supprimée', 'success');
+            }
+        }
+        window.deleteActivite = deleteActivite;
+
+        // ============== CRUD ÉVALUATIONS ==============
+        function editEvaluation(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            let targetProject = null, evalItem = null;
+            for (let i = 0; i < projects.length; i++) {
+                let found = projects[i].evaluations.find(e => e.id === id);
+                if (found) { targetProject = projects[i]; evalItem = found; break; }
+            }
+            if (!targetProject || !evalItem) return;
+            openModal(`
+                <h3>✏️ Modifier l'évaluation</h3>
+                <div class="form-group"><label>Projet</label><select id="fProjetId">${projects.map(p => `<option value="${p.id}" ${p.id === targetProject.id ? 'selected' : ''}>${p.code} - ${p.nom}</option>`).join('')}</select></div>
+                <div class="form-group"><label>Titre <span class="required">*</span></label><input id="fTitre" value="${evalItem.titre}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Type</label><select id="fType"><option value="interne" ${evalItem.type==='interne'?'selected':''}>Interne</option><option value="externe" ${evalItem.type==='externe'?'selected':''}>Externe</option><option value="participative" ${evalItem.type==='participative'?'selected':''}>Participative</option></select></div>
+                    <div class="form-group"><label>Score (%)</label><input type="number" id="fScore" value="${evalItem.score}" min="0" max="100"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date de début</label><input type="date" id="fDateDebut" value="${evalItem.date_debut || ''}"></div>
+                    <div class="form-group"><label>Date de fin</label><input type="date" id="fDateFin" value="${evalItem.date_fin || ''}"></div>
+                </div>
+                <div class="form-group"><label>Recommandations</label><textarea id="fRecommandations" rows="3">${evalItem.recommandations||''}</textarea></div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                    <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                    <button class="btn-primary" id="saveEvalBtn">Mettre à jour</button>
+                </div>
+            `);
+            document.getElementById('saveEvalBtn').onclick = function() {
+                let newProjetId = document.getElementById('fProjetId').value;
+                let titre = document.getElementById('fTitre').value.trim();
+                if (!titre) { showToast('Titre obligatoire.', 'error'); return; }
+                let oldProj = projects.find(p => p.id === targetProject.id);
+                if (oldProj) { let idx = oldProj.evaluations.findIndex(e => e.id === evalItem.id); if (idx !== -1) oldProj.evaluations.splice(idx, 1); }
+                let newProj = projects.find(p => p.id === newProjetId);
+                if (newProj) {
+                    newProj.evaluations.push({ ...evalItem, titre: titre, type: document.getElementById('fType').value, score: parseInt(document.getElementById('fScore').value) || 0, date_debut: document.getElementById('fDateDebut').value, date_fin: document.getElementById('fDateFin').value, recommandations: document.getElementById('fRecommandations').value, projetId: newProjetId });
+                }
+                saveAll(); closeModal(); showToast('Évaluation mise à jour', 'success');
+            };
+        }
+        window.editEvaluation = editEvaluation;
+
+        function deleteEvaluation(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            if (confirm('Supprimer cette évaluation ?')) {
+                deletedIds.evaluations.add(id);
+                for (let i = 0; i < projects.length; i++) {
+                    let idx = projects[i].evaluations.findIndex(e => e.id === id);
+                    if (idx !== -1) { projects[i].evaluations.splice(idx, 1); break; }
+                }
+                saveAll(); showToast('Évaluation supprimée', 'success');
+            }
+        }
+        window.deleteEvaluation = deleteEvaluation;
+
+        // ============== CRUD FEEDBACK ==============
+        function editFeedback(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            let fb = feedbacks.find(f => f.id === id); if (!fb) return;
+            openModal(`
+                <h3>✏️ Modifier le feedback</h3>
+                <div class="form-group"><label>Projet <span class="required">*</span></label><select id="fProjetId">${projects.map(p => `<option value="${p.id}" ${p.id === fb.projetId ? 'selected' : ''}>${p.code} - ${p.nom}</option>`).join('')}</select></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Date de réception</label><input type="date" id="fDate" value="${fb.date || ''}"></div>
+                    <div class="form-group"><label>Date de clôture</label><input type="date" id="fDateCloture" value="${fb.date_cloture || ''}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Canal de réception</label><select id="fCanal"><option value="Ligne verte" ${fb.canal==='Ligne verte'?'selected':''}>Ligne verte</option><option value="Face à face" ${fb.canal==='Face à face'?'selected':''}>Face à face</option><option value="Email" ${fb.canal==='Email'?'selected':''}>Email</option><option value="Autre" ${fb.canal==='Autre'?'selected':''}>Autre</option></select></div>
+                    <div class="form-group"><label>Catégorisation</label><select id="fCategorie"><option value="Remerciement" ${fb.categorie==='Remerciement'?'selected':''}>Remerciement</option><option value="Doléance" ${fb.categorie==='Doléance'?'selected':''}>Doléance</option><option value="Réclamation" ${fb.categorie==='Réclamation'?'selected':''}>Réclamation</option><option value="Question" ${fb.categorie==='Question'?'selected':''}>Question</option><option value="Satisfaction" ${fb.categorie==='Satisfaction'?'selected':''}>Satisfaction</option><option value="Préoccupation" ${fb.categorie==='Préoccupation'?'selected':''}>Préoccupation</option><option value="Autre" ${fb.categorie==='Autre'?'selected':''}>Autre</option></select></div>
+                </div>
+                <div class="form-group"><label>Description / Allégation</label><textarea id="fRetour" rows="3">${fb.retour || ''}</textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Nom du plaignant</label><input id="fNom" value="${fb.nom || ''}"></div>
+                    <div class="form-group"><label>Contact</label><input id="fContact" value="${fb.contact || ''}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Sexe</label><select id="fSexe"><option value="Homme" ${fb.sexe==='Homme'?'selected':''}>Homme</option><option value="Femme" ${fb.sexe==='Femme'?'selected':''}>Femme</option></select></div>
+                    <div class="form-group"><label>Âge</label><input type="number" id="fAge" value="${fb.age || ''}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Handicap ?</label><select id="fHandicap"><option value="Non" ${fb.handicap==='Non'?'selected':''}>Non</option><option value="Oui" ${fb.handicap==='Oui'?'selected':''}>Oui</option></select></div>
+                    <div class="form-group"><label>Programme</label><input id="fProgramme" value="${fb.programme || ''}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Adressé à</label><input id="fAdresseA" value="${fb.adresse_a || ''}"></div>
+                    <div class="form-group"><label>Statut</label><select id="fStatut"><option value="Ouvert" ${fb.statut==='Ouvert'?'selected':''}>Ouvert</option><option value="Fermé" ${fb.statut==='Fermé'?'selected':''}>Fermé</option></select></div>
+                </div>
+                <div class="form-group"><label>Mesure prise / Résolution</label><textarea id="fAction" rows="2">${fb.action || ''}</textarea></div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                    <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                    <button class="btn-primary" id="saveFbBtn">Mettre à jour</button>
+                </div>
+            `);
+            document.getElementById('saveFbBtn').onclick = function() {
+                let idx = feedbacks.findIndex(f => f.id === fb.id);
+                feedbacks[idx] = {
+                    ...fb,
+                    projetId: document.getElementById('fProjetId').value,
+                    date: document.getElementById('fDate').value,
+                    date_cloture: document.getElementById('fDateCloture').value,
+                    canal: document.getElementById('fCanal').value,
+                    categorie: document.getElementById('fCategorie').value,
+                    retour: document.getElementById('fRetour').value,
+                    nom: document.getElementById('fNom').value,
+                    contact: document.getElementById('fContact').value,
+                    sexe: document.getElementById('fSexe').value,
+                    age: parseInt(document.getElementById('fAge').value) || null,
+                    handicap: document.getElementById('fHandicap').value,
+                    programme: document.getElementById('fProgramme').value,
+                    adresse_a: document.getElementById('fAdresseA').value,
+                    statut: document.getElementById('fStatut').value,
+                    action: document.getElementById('fAction').value
+                };
+                saveAll(); closeModal(); showToast('Feedback mis à jour', 'success');
+            };
+        }
+        window.editFeedback = editFeedback;
+
+        function deleteFeedback(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            if (confirm('Supprimer ce feedback ?')) {
+                deletedIds.feedbacks.add(id);
+                feedbacks = feedbacks.filter(f => f.id !== id);
+                saveAll(); showToast('Feedback supprimé', 'success');
+            }
+        }
+        window.deleteFeedback = deleteFeedback;
+
+        // IMPORT / EXPORT
+        function importExcelBeneficiaires() {
+            if (isReadOnly) { showToast('Mode lecture seule', 'info'); return; }
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx,.xls';
+            input.onchange = function(e) {
+                const file = this.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+                        if (!rows.length) { showToast('Fichier vide.', 'error'); return; }
+                        
+                        let imported = 0;
+                        rows.forEach(row => {
+                            const projetCode = String(row['Code Projet'] || row['Projet'] || '').trim();
+                            let proj = projects.find(p => p.code === projetCode);
+                            if (!proj) return;
+                            
+                            const actNom = String(row['Activité'] || row['Activite'] || '').trim();
+                            let act = proj.activites.find(a => a.nom === actNom);
+                            if (!act) return;
+                            
+                            const localite = String(row['Localité'] || row['Localite'] || row['Village'] || '').trim();
+                            if (!localite) return;
+                            
+                            const hommes = parseInt(row['Hommes']) || 0;
+                            const femmes = parseInt(row['Femmes']) || 0;
+                            const garcons = parseInt(row['Garçons'] || row['Garcons']) || 0;
+                            const filles = parseInt(row['Filles']) || 0;
+                            const handicapes = parseInt(row['Handicapés'] || row['Handicapes']) || 0;
+                            
+                            const genres = [];
+                            for (let i=0; i<hommes; i++) genres.push('Homme');
+                            for (let i=0; i<femmes; i++) genres.push('Femme');
+                            for (let i=0; i<garcons; i++) genres.push('Garçon');
+                            for (let i=0; i<filles; i++) genres.push('Fille');
+                            
+                            genres.forEach((genre, index) => {
+                                const isHand = index < handicapes;
+                                proj.beneficiaires.push({
+                                    id: generateId(), nom: 'Bénéf', contact: '', localite,
+                                    genre: genre, age: '30', profil: 'Communauté hôte',
+                                    handicap: isHand ? 'oui' : 'non', type_handicap: isHand ? 'Moteur' : '',
+                                    handicap_hommes: 0, handicap_femmes: 0, handicap_garcons: 0, handicap_filles: 0,
+                                    date_debut: new Date().toISOString().slice(0,10), date_fin: '',
+                                    statut: 'actif', activiteId: act.id, projetId: proj.id
+                                });
+                                imported++;
+                            });
+                        });
+                        
+                        saveAll();
+                        showToast(imported + ' bénéficiaire(s) importé(s).', 'success');
+                    } catch (err) { showToast('Erreur import: ' + err.message, 'error'); }
+                };
+                reader.readAsArrayBuffer(file);
+            };
+            input.click();
+        }
+
+        function exportBenefExcel() {
+            const all = [];
+            projects.forEach(p => {
+                const grouped = aggregateBeneficiaires(p.beneficiaires.map(b => ({ ...b, projetNom: p.nom, projetCode: p.code })));
+                grouped.forEach(g => all.push({
+                    'Code Projet': g.projetCode, 'Activité': g.activiteNom, 'Localité': g.localite,
+                    'Total': g.total, 'Hommes': g.hommes, 'Femmes': g.femmes, 'Garçons': g.garcons, 'Filles': g.filles, 'Handicapés': g.handicapes
+                }));
+            });
+            if (!all.length) { showToast('Aucun bénéficiaire à exporter.', 'info'); return; }
+            const ws = XLSX.utils.json_to_sheet(all);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Bénéficiaires");
+            XLSX.writeFile(wb, "Export_Beneficiaires_" + new Date().toISOString().slice(0,10) + ".xlsx");
+        }
+
+        
+        
+        // ========== CRUD INDICATEURS ==========
+        function addIndicateur() {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            if (projects.length === 0) { showToast('Créez d\'abord un projet.', 'error'); return; }
+            openModal(`
+                <h3>🎯 Nouvel indicateur</h3>
+                <div class="form-group"><label>Projet <span class="required">*</span></label>
+                    <select id="fProjetId">${projects.map(p => `<option value="${p.id}" ${p.id === currentProjectId ? 'selected' : ''}>${p.code} - ${p.nom}</option>`).join('')}</select>
+                </div>
+                <div class="form-group"><label>Nom de l'indicateur <span class="required">*</span></label><input id="fNom" placeholder="Ex: Nombre de ménages ayant accès à l'eau"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Unité</label><input id="fUnite" placeholder="Ex: ménages, %, personnes..."></div>
+                    <div class="form-group"><label>Période</label><input id="fPeriode" placeholder="Ex: 2026, T1 2026..."></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Cible</label><input type="number" id="fCible" value="0" min="0"></div>
+                    <div class="form-group"><label>Réalisé</label><input type="number" id="fRealise" value="0" min="0"></div>
+                </div>
+                <div class="form-group"><label>Commentaire / Source</label><textarea id="fCommentaire" rows="2"></textarea></div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                    <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                    <button class="btn-primary" id="saveIndBtn">Ajouter</button>
+                </div>
+            `);
+            document.getElementById('saveIndBtn').onclick = function() {
+                const projetId = document.getElementById('fProjetId').value;
+                const nom = document.getElementById('fNom').value.trim();
+                if (!nom) { showToast('Nom obligatoire.', 'error'); return; }
+                const proj = projects.find(p => p.id === projetId);
+                if (!proj) return;
+                if (!proj.indicateurs) proj.indicateurs = [];
+                proj.indicateurs.push({
+                    id: generateId(),
+                    nom,
+                    unite: document.getElementById('fUnite').value.trim(),
+                    periode: document.getElementById('fPeriode').value.trim(),
+                    cible: parseFloat(document.getElementById('fCible').value) || 0,
+                    realise: parseFloat(document.getElementById('fRealise').value) || 0,
+                    commentaire: document.getElementById('fCommentaire').value.trim(),
+                    projetId
+                });
+                saveAll();
+                closeModal();
+                showToast('Indicateur ajouté', 'success');
+            };
+        }
+
+        function editIndicateur(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            let targetProject = null, ind = null;
+            for (const p of projects) {
+                const found = (p.indicateurs || []).find(i => i.id === id);
+                if (found) { targetProject = p; ind = found; break; }
+            }
+            if (!targetProject || !ind) return;
+            openModal(`
+                <h3>✏️ Modifier l'indicateur</h3>
+                <div class="form-group"><label>Projet</label>
+                    <select id="fProjetId">${projects.map(p => `<option value="${p.id}" ${p.id === targetProject.id ? 'selected' : ''}>${p.code} - ${p.nom}</option>`).join('')}</select>
+                </div>
+                <div class="form-group"><label>Nom de l'indicateur <span class="required">*</span></label><input id="fNom" value="${escapeHtml(ind.nom)}"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Unité</label><input id="fUnite" value="${escapeHtml(ind.unite || '')}"></div>
+                    <div class="form-group"><label>Période</label><input id="fPeriode" value="${escapeHtml(ind.periode || '')}"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Cible</label><input type="number" id="fCible" value="${ind.cible || 0}" min="0"></div>
+                    <div class="form-group"><label>Réalisé</label><input type="number" id="fRealise" value="${ind.realise || 0}" min="0"></div>
+                </div>
+                <div class="form-group"><label>Commentaire / Source</label><textarea id="fCommentaire" rows="2">${escapeHtml(ind.commentaire || '')}</textarea></div>
+                <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                    <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                    <button class="btn-primary" id="saveIndBtn">Mettre à jour</button>
+                </div>
+            `);
+            document.getElementById('saveIndBtn').onclick = function() {
+                const nom = document.getElementById('fNom').value.trim();
+                if (!nom) { showToast('Nom obligatoire.', 'error'); return; }
+                // Remove from old project
+                targetProject.indicateurs = (targetProject.indicateurs || []).filter(i => i.id !== id);
+                const newProjetId = document.getElementById('fProjetId').value;
+                const newProj = projects.find(p => p.id === newProjetId);
+                if (!newProj.indicateurs) newProj.indicateurs = [];
+                newProj.indicateurs.push({
+                    ...ind,
+                    nom,
+                    unite: document.getElementById('fUnite').value.trim(),
+                    periode: document.getElementById('fPeriode').value.trim(),
+                    cible: parseFloat(document.getElementById('fCible').value) || 0,
+                    realise: parseFloat(document.getElementById('fRealise').value) || 0,
+                    commentaire: document.getElementById('fCommentaire').value.trim(),
+                    projetId: newProjetId
+                });
+                saveAll();
+                closeModal();
+                showToast('Indicateur mis à jour', 'success');
+            };
+        }
+
+        function deleteIndicateur(id) {
+            if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+            if (!confirm('Supprimer cet indicateur ?')) return;
+            for (const p of projects) {
+                if (p.indicateurs) {
+                    const before = p.indicateurs.length;
+                    p.indicateurs = p.indicateurs.filter(i => i.id !== id);
+                    if (p.indicateurs.length < before) break;
+                }
+            }
+            saveAll();
+            showToast('Indicateur supprimé', 'success');
+        }
+
+// ========== IMPORT ACTIVITÉS EXCEL ==========
+        function importExcelActivites() {
+            if (isReadOnly) { showToast('Mode lecture seule', 'info'); return; }
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx,.xls';
+            input.onchange = function() {
+                const file = this.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+                        if (!rows.length) { showToast('Fichier vide.', 'error'); return; }
+
+                        let imported = 0, skipped = 0;
+                        rows.forEach(row => {
+                            const projetCode = String(row['Code Projet'] || row['Projet'] || row['Code'] || '').trim();
+                            let proj = projects.find(p => p.code === projetCode);
+                            if (!proj) { skipped++; return; }
+
+                            const nom = String(row['Nom'] || row['Activité'] || row['Activite'] || '').trim();
+                            if (!nom) { skipped++; return; }
+
+                            // Éviter les doublons
+                            if (proj.activites.some(a => a.nom.toLowerCase() === nom.toLowerCase())) {
+                                skipped++; return;
+                            }
+
+                            const typeRaw = String(row['Type'] || 'autre').toLowerCase();
+                            const typeMap = {
+                                'supervision': 'supervision', 'formation': 'formation',
+                                'coordination': 'coordination', 'construction': 'construction',
+                                'distribution': 'distribution', 'réhabilitation': 'rehabilitation',
+                                'rehabilitation': 'rehabilitation', 'rehab': 'rehabilitation', 'autre': 'autre'
+                            };
+                            const type = typeMap[typeRaw] || 'autre';
+
+                            const statutRaw = String(row['Statut'] || 'planifié').toLowerCase();
+                            let statut = 'planifié';
+                            if (statutRaw.includes('cours') || statutRaw.includes('encours')) statut = 'encours';
+                            else if (statutRaw.includes('réalis') || statutRaw.includes('realis') || statutRaw.includes('terminé') || statutRaw.includes('termine')) statut = 'réalisé';
+
+                            proj.activites.push({
+                                id: generateId(),
+                                nom,
+                                type,
+                                statut,
+                                date_debut: String(row['Date début'] || row['Date debut'] || row['Début'] || '').slice(0,10) || '',
+                                date_fin: String(row['Date fin'] || row['Fin'] || '').slice(0,10) || '',
+                                cible: parseInt(row['Cible']) || 0,
+                                atteint: parseInt(row['Atteint']) || 0,
+                                progression: parseInt(row['Progression'] || row['Prog']) || 0,
+                                commentaire: String(row['Commentaire'] || ''),
+                                projetId: proj.id
+                            });
+                            imported++;
+                        });
+
+                        saveAll();
+                        showToast(imported + ' activité(s) importée(s)' + (skipped ? ', ' + skipped + ' ignorée(s)' : ''), 'success');
+                    } catch (err) {
+                        showToast('Erreur import: ' + err.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            };
+            input.click();
+        }
+
+        // ========== IMPORT PLAINTES / FEEDBACK EXCEL ==========
+        function importExcelFeedbacks() {
+            if (isReadOnly) { showToast('Mode lecture seule', 'info'); return; }
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx,.xls';
+            input.onchange = function() {
+                const file = this.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
+                        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+                        if (!rows.length) { showToast('Fichier vide.', 'error'); return; }
+
+                        let imported = 0, skipped = 0;
+                        rows.forEach(row => {
+                            const projetCode = String(row['Code Projet'] || row['Projet'] || row['Code'] || '').trim();
+                            let proj = projects.find(p => p.code === projetCode);
+                            // Si pas de projet trouvé, on prend le premier ou on saute
+                            const projetId = proj ? proj.id : (projects[0] ? projects[0].id : null);
+                            if (!projetId) { skipped++; return; }
+
+                            const retour = String(row['Description'] || row['Allégation'] || row['Allegation'] || row['Retour'] || row['Plainte'] || row['Contenu'] || '').trim();
+                            if (!retour) { skipped++; return; }
+
+                            const catRaw = String(row['Catégorie'] || row['Categorie'] || row['Type'] || 'Autre').trim();
+                            const catMap = {
+                                'remerciement': 'Remerciement', 'doléance': 'Doléance', 'doleance': 'Doléance',
+                                'réclamation': 'Réclamation', 'reclamation': 'Réclamation',
+                                'question': 'Question', 'satisfaction': 'Satisfaction',
+                                'préoccupation': 'Préoccupation', 'preoccupation': 'Préoccupation'
+                            };
+                            const categorie = catMap[catRaw.toLowerCase()] || catRaw || 'Autre';
+
+                            const statutRaw = String(row['Statut'] || 'Ouvert').toLowerCase();
+                            const statut = (statutRaw.includes('ferm') || statutRaw.includes('clotur') || statutRaw.includes('clos')) ? 'Fermé' : 'Ouvert';
+
+                            feedbacks.push({
+                                id: generateId(),
+                                projetId,
+                                date: String(row['Date'] || row['Date réception'] || row['Date reception'] || '').slice(0,10) || new Date().toISOString().slice(0,10),
+                                date_cloture: String(row['Date clôture'] || row['Date cloture'] || row['Clôture'] || '').slice(0,10) || '',
+                                canal: String(row['Canal'] || row['Canal de réception'] || 'Face à face'),
+                                categorie,
+                                retour,
+                                nom: String(row['Nom'] || row['Plaignant'] || row['Nom du plaignant'] || ''),
+                                contact: String(row['Contact'] || row['Téléphone'] || row['Telephone'] || ''),
+                                sexe: String(row['Sexe'] || row['Genre'] || 'Homme'),
+                                age: parseInt(row['Âge'] || row['Age']) || null,
+                                handicap: String(row['Handicap'] || 'Non'),
+                                programme: String(row['Programme'] || ''),
+                                adresse_a: String(row['Adressé à'] || row['Adresse à'] || row['Destinataire'] || ''),
+                                action: String(row['Action'] || row['Mesure'] || row['Résolution'] || row['Resolution'] || ''),
+                                statut,
+                                village: String(row['Village'] || row['Localité'] || row['Localite'] || '')
+                            });
+                            imported++;
+                        });
+
+                        saveAll();
+                        showToast(imported + ' plainte(s) importée(s)' + (skipped ? ', ' + skipped + ' ignorée(s)' : ''), 'success');
+                    } catch (err) {
+                        showToast('Erreur import: ' + err.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            };
+            input.click();
+        }
+
+
+        // ================================================================
+        // ÉCOUTEURS D'ÉVÉNEMENTS
+        // ================================================================
+        function attachEventListeners() {
+            addEventListenerSafe('loginForm', 'submit', async (e) => {
+                e.preventDefault();
+                const err = document.getElementById('loginError'); err.style.display = 'none';
+                try { await handleLogin(document.getElementById('loginEmail').value.trim(), document.getElementById('loginPassword').value); }
+                catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }
+            });
+
+            addEventListenerSafe('registerForm', 'submit', async (e) => {
+                e.preventDefault();
+                const pass = document.getElementById('registerPassword').value;
+                const conf = document.getElementById('registerConfirm').value;
+                if (pass !== conf) { document.getElementById('registerError').textContent = 'Mots de passe différents'; document.getElementById('registerError').style.display = 'block'; return; }
+                try { await handleRegister(document.getElementById('registerEmail').value.trim(), pass); }
+                catch (ex) { document.getElementById('registerError').textContent = ex.message; document.getElementById('registerError').style.display = 'block'; }
+            });
+
+            addEventListenerSafe('guestLoginBtn', 'click', async () => {
+                try { await handleGuestLogin(); } catch (e) { showToast(e.message, 'error'); }
+            });
+
+            addEventListenerSafe('logoutBtn', 'click', handleLogout);
+            addEventListenerSafe('logoutMobileBtn', 'click', handleLogout);
+            addEventListenerSafe('showRegisterBtn', 'click', showRegister);
+            addEventListenerSafe('showLoginBtn', 'click', showLogin);
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+                    document.getElementById(this.getAttribute('data-page') + 'Page').classList.add('active-page');
+                });
+            });
+
+            // Délégation pour tous les boutons d'action
+            document.addEventListener('click', (e) => {
+                const editBenBtn = e.target.closest('.benef-edit-btn');
+                if (editBenBtn) { e.preventDefault(); editBeneficiaire(editBenBtn.getAttribute('data-localite'), editBenBtn.getAttribute('data-activite')); return; }
+                const delBenBtn = e.target.closest('.benef-del-btn');
+                if (delBenBtn) { e.preventDefault(); deleteBeneficiaireByLocalite(delBenBtn.getAttribute('data-localite'), delBenBtn.getAttribute('data-activite')); return; }
+                
+                const action = e.target.closest('[data-action]');
+                if (action) {
+                    const act = action.getAttribute('data-action');
+                    const id = action.getAttribute('data-id');
+                    if (act === 'edit-act') editActivite(id);
+                    else if (act === 'del-act') deleteActivite(id);
+                    else if (act === 'edit-eval') editEvaluation(id);
+                    else if (act === 'del-eval') deleteEvaluation(id);
+                    else if (act === 'edit-fb') editFeedback(id);
+                    else if (act === 'del-fb') deleteFeedback(id);
+                    else if (act === 'edit-ind') editIndicateur(id);
+                    else if (act === 'del-ind') deleteIndicateur(id);
+                }
+            });
+
+            // Ajouter Projet
+            addEventListenerSafe('addProjectBtn', 'click', function() {
+                if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+                openModal(`
+                    <h3>📁 Nouveau projet</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>Code projet <span class="required">*</span></label><input id="fCode" placeholder="Ex: EAM-1-26"></div>
+                        <div class="form-group"><label>Nom du projet <span class="required">*</span></label><input id="fNom" placeholder="Nom complet"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Région</label><input id="fRegion"></div>
+                        <div class="form-group"><label>Pays</label><input id="fPays"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Statut</label><select id="fStatut"><option value="actif">Actif</option><option value="planifié">Planifié</option><option value="terminé">Terminé</option></select></div>
+                        <div class="form-group"><label>Budget (CFA)</label><input type="number" id="fBudget" value="0"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Date de début</label><input type="date" id="fDateDebut"></div>
+                        <div class="form-group"><label>Date de fin</label><input type="date" id="fDateFin"></div>
+                    </div>
+                    <div class="form-group"><label>Description</label><textarea id="fDescription" rows="2"></textarea></div>
+                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                        <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                        <button class="btn-primary" id="saveProjectBtn">Créer</button>
+                    </div>
+                `);
+                document.getElementById('saveProjectBtn').onclick = function() {
+                    var code = document.getElementById('fCode').value.trim();
+                    var nom = document.getElementById('fNom').value.trim();
+                    if (!code || !nom) { showToast('Code et nom obligatoires.', 'error'); return; }
+                    if (projects.find(function(p) { return p.code === code; })) { showToast('Code déjà utilisé.', 'error'); return; }
+                    var obj = {
+                        id: generateId(), code, nom,
+                        region: document.getElementById('fRegion').value.trim(),
+                        pays: document.getElementById('fPays').value.trim(),
+                        statut: document.getElementById('fStatut').value,
+                        budget: parseInt(document.getElementById('fBudget').value) || 0,
+                        date_debut: document.getElementById('fDateDebut').value,
+                        date_fin: document.getElementById('fDateFin').value || '',
+                        description: document.getElementById('fDescription').value || '',
+                        createdAt: new Date().toISOString(),
+                        activites: [], beneficiaires: [], evaluations: [], indicateurs: []
+                    };
+                    projects.push(obj);
+                    currentProjectId = obj.id;
+                    saveAll();
+                    closeModal();
+                    showToast('Projet créé !', 'success');
+                };
+            });
+
+            // Ajouter Activité
+            addEventListenerSafe('addActiviteBtn', 'click', function() {
+                if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+                if (projects.length === 0) { showToast('Créez d\'abord un projet.', 'error'); return; }
+                openModal(`
+                    <h3>➕ Nouvelle activité</h3>
+                    <div class="form-group"><label>Projet <span class="required">*</span></label><select id="fProjetId">${projects.map(p => `<option value="${p.id}" ${p.id === currentProjectId ? 'selected' : ''}>${p.code} - ${p.nom}</option>`).join('')}</select></div>
+                    <div class="form-group"><label>Nom <span class="required">*</span></label><input id="fNom"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Type</label><select id="fType"><option value="supervision">Supervision</option><option value="formation">Formation</option><option value="coordination">Coordination</option><option value="construction">Construction</option><option value="distribution">Distribution</option><option value="rehabilitation">Réhabilitation</option><option value="autre">Autre</option></select></div>
+                        <div class="form-group"><label>Statut</label><select id="fStatut"><option value="planifié">Planifié</option><option value="encours">En cours</option><option value="réalisé">Réalisé</option></select></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Date de début</label><input type="date" id="fDateDebut"></div>
+                        <div class="form-group"><label>Date de fin</label><input type="date" id="fDateFin"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Cible</label><input type="number" id="fCible" value="0"></div>
+                        <div class="form-group"><label>Atteint</label><input type="number" id="fAtteint" value="0"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Progression (%)</label><input type="number" id="fProgression" value="0" min="0" max="100"></div>
+                        <div class="form-group"><label>Commentaire</label><input id="fCommentaire"></div>
+                    </div>
+                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                        <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                        <button class="btn-primary" id="saveActBtn">Ajouter</button>
+                    </div>
+                `);
+                document.getElementById('saveActBtn').onclick = function() {
+                    var projetId = document.getElementById('fProjetId').value;
+                    var nom = document.getElementById('fNom').value.trim();
+                    if (!nom) { showToast('Nom obligatoire.', 'error'); return; }
+                    var proj = projects.find(function(p) { return p.id === projetId; });
+                    if (proj) {
+                        proj.activites.push({
+                            id: generateId(), nom, type: document.getElementById('fType').value,
+                            statut: document.getElementById('fStatut').value,
+                            date_debut: document.getElementById('fDateDebut').value,
+                            date_fin: document.getElementById('fDateFin').value,
+                            cible: parseInt(document.getElementById('fCible').value) || 0,
+                            atteint: parseInt(document.getElementById('fAtteint').value) || 0,
+                            progression: parseInt(document.getElementById('fProgression').value) || 0,
+                            commentaire: document.getElementById('fCommentaire').value,
+                            projetId: projetId
+                        });
+                        saveAll(); closeModal(); showToast('Activité ajoutée', 'success');
+                    }
+                };
+            });
+
+            // Ajouter Bénéficiaires
+            addEventListenerSafe('addBenefBtn', 'click', function() {
+                if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+                if (projects.length === 0) { showToast('Créez d\'abord un projet.', 'error'); return; }
+                var project = getCurrentProject();
+                var actOptions = project ? project.activites.map(a => `<option value="${a.id}">${a.nom}</option>`).join('') : '';
+                openModal(`
+                    <h3>➕ Ajouter des bénéficiaires</h3>
+                    <div class="form-group"><label>Projet</label><select id="fProjetId">${projects.map(p => `<option value="${p.id}" ${p.id === currentProjectId ? 'selected' : ''}>${p.code} - ${p.nom}</option>`).join('')}</select></div>
+                    <div class="form-group"><label>Activité liée <span class="required">*</span></label><select id="fActiviteId">${actOptions}</select></div>
+                    <div class="form-group"><label>Localité <span class="required">*</span></label><input id="fLocalite"></div>
+                    <div class="form-row-4">
+                        <div class="form-group"><label>Hommes</label><input type="number" id="fHommes" value="0"></div>
+                        <div class="form-group"><label>Femmes</label><input type="number" id="fFemmes" value="0"></div>
+                        <div class="form-group"><label>Garçons</label><input type="number" id="fGarcons" value="0"></div>
+                        <div class="form-group"><label>Filles</label><input type="number" id="fFilles" value="0"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Handicapés</label><input type="number" id="fHandicapes" value="0"></div>
+                        <div class="form-group"><label>Type(s) handicap</label><input id="fTypesHandicap"></div>
+                    </div>
+                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                        <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                        <button class="btn-primary" id="saveBenefBtn">Ajouter</button>
+                    </div>
+                `);
+                document.getElementById('saveBenefBtn').onclick = function() {
+                    var projetId = document.getElementById('fProjetId').value;
+                    var localite = document.getElementById('fLocalite').value.trim();
+                    var activiteId = document.getElementById('fActiviteId').value;
+                    if (!localite || !activiteId) { showToast('Localité et activité obligatoires.', 'error'); return; }
+                    var proj = projects.find(p => p.id === projetId);
+                    var act = proj.activites.find(a => a.id === activiteId);
+                    var hommes = parseInt(document.getElementById('fHommes').value) || 0;
+                    var femmes = parseInt(document.getElementById('fFemmes').value) || 0;
+                    var garcons = parseInt(document.getElementById('fGarcons').value) || 0;
+                    var filles = parseInt(document.getElementById('fFilles').value) || 0;
+                    var handicapes = parseInt(document.getElementById('fHandicapes').value) || 0;
+                    var types = (document.getElementById('fTypesHandicap').value || 'Non spécifié').split(',');
+                    var total = hommes + femmes + garcons + filles;
+                    if (total === 0) { showToast('Ajoutez au moins un bénéficiaire.', 'error'); return; }
+                    var genres = [];
+                    for (let i = 0; i < hommes; i++) genres.push('Homme');
+                    for (let i = 0; i < femmes; i++) genres.push('Femme');
+                    for (let i = 0; i < garcons; i++) genres.push('Garçon');
+                    for (let i = 0; i < filles; i++) genres.push('Fille');
+                    genres.forEach((genre, index) => {
+                        var isHand = index < handicapes;
+                        proj.beneficiaires.push({
+                            id: generateId(), nom: 'Bénéf', contact: '', localite, genre, age: '30',
+                            profil: 'Communauté hôte', handicap: isHand ? 'oui' : 'non',
+                            type_handicap: isHand ? types[0] : '',
+                            handicap_hommes: 0, handicap_femmes: 0, handicap_garcons: 0, handicap_filles: 0,
+                            date_debut: new Date().toISOString().slice(0,10), date_fin: '',
+                            statut: 'actif', activiteId, projetId
+                        });
+                    });
+                    if (act) act.atteint = proj.beneficiaires.filter(b => b.activiteId === activiteId).length;
+                    saveAll(); closeModal(); showToast(total + ' bénéficiaires ajoutés', 'success');
+                };
+            });
+
+            // Ajouter Évaluation
+            addEventListenerSafe('addEvalBtn', 'click', function() {
+                if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+                if (projects.length === 0) { showToast('Créez d\'abord un projet.', 'error'); return; }
+                openModal(`
+                    <h3>⭐ Nouvelle évaluation</h3>
+                    <div class="form-group"><label>Projet</label><select id="fProjetId">${projects.map(p => `<option value="${p.id}" ${p.id === currentProjectId ? 'selected' : ''}>${p.code} - ${p.nom}</option>`).join('')}</select></div>
+                    <div class="form-group"><label>Titre <span class="required">*</span></label><input id="fTitre"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Type</label><select id="fType"><option value="interne">Interne</option><option value="externe">Externe</option><option value="participative">Participative</option></select></div>
+                        <div class="form-group"><label>Score (%)</label><input type="number" id="fScore" min="0" max="100"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Date début</label><input type="date" id="fDateDebut"></div>
+                        <div class="form-group"><label>Date fin</label><input type="date" id="fDateFin"></div>
+                    </div>
+                    <div class="form-group"><label>Recommandations</label><textarea id="fRecommandations" rows="3"></textarea></div>
+                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                        <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                        <button class="btn-primary" id="saveEvalBtn">Ajouter</button>
+                    </div>
+                `);
+                document.getElementById('saveEvalBtn').onclick = function() {
+                    var projetId = document.getElementById('fProjetId').value;
+                    var titre = document.getElementById('fTitre').value.trim();
+                    if (!titre) { showToast('Titre obligatoire.', 'error'); return; }
+                    var proj = projects.find(p => p.id === projetId);
+                    if (proj) {
+                        proj.evaluations.push({
+                            id: generateId(), titre, type: document.getElementById('fType').value,
+                            score: parseInt(document.getElementById('fScore').value) || 0,
+                            date_debut: document.getElementById('fDateDebut').value,
+                            date_fin: document.getElementById('fDateFin').value,
+                            recommandations: document.getElementById('fRecommandations').value,
+                            projetId
+                        });
+                        saveAll(); closeModal(); showToast('Évaluation ajoutée', 'success');
+                    }
+                };
+            });
+
+            // Ajouter Feedback
+            addEventListenerSafe('addFeedbackBtn', 'click', function() {
+                if (isReadOnly) { showToast('📖 Mode lecture seule', 'info'); return; }
+                if (projects.length === 0) { showToast('Créez d\'abord un projet.', 'error'); return; }
+                openModal(`
+                    <h3>💬 Nouveau feedback</h3>
+                    <div class="form-group"><label>Projet <span class="required">*</span></label><select id="fProjetId">${projects.map(p => `<option value="${p.id}" ${p.id === currentProjectId ? 'selected' : ''}>${p.code} - ${p.nom}</option>`).join('')}</select></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Date de réception</label><input type="date" id="fDate" value="${new Date().toISOString().slice(0,10)}"></div>
+                        <div class="form-group"><label>Date de clôture</label><input type="date" id="fDateCloture"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Canal</label><select id="fCanal"><option value="Ligne verte">Ligne verte</option><option value="Face à face">Face à face</option><option value="Email">Email</option><option value="Autre">Autre</option></select></div>
+                        <div class="form-group"><label>Catégorie</label><select id="fCategorie"><option value="Remerciement">Remerciement</option><option value="Doléance">Doléance</option><option value="Réclamation">Réclamation</option><option value="Question">Question</option><option value="Satisfaction">Satisfaction</option><option value="Préoccupation">Préoccupation</option><option value="Autre">Autre</option></select></div>
+                    </div>
+                    <div class="form-group"><label>Description / Allégation</label><textarea id="fRetour" rows="3"></textarea></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Nom du plaignant</label><input id="fNom"></div>
+                        <div class="form-group"><label>Contact</label><input id="fContact"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Sexe</label><select id="fSexe"><option value="Homme">Homme</option><option value="Femme">Femme</option></select></div>
+                        <div class="form-group"><label>Âge</label><input type="number" id="fAge"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Handicap ?</label><select id="fHandicap"><option value="Non">Non</option><option value="Oui">Oui</option></select></div>
+                        <div class="form-group"><label>Programme</label><input id="fProgramme"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Adressé à</label><input id="fAdresseA"></div>
+                        <div class="form-group"><label>Statut</label><select id="fStatut"><option value="Ouvert">Ouvert</option><option value="Fermé">Fermé</option></select></div>
+                    </div>
+                    <div class="form-group"><label>Mesure prise / Résolution</label><textarea id="fAction" rows="2"></textarea></div>
+                    <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:16px;">
+                        <button class="btn-outline" onclick="closeModal()">Annuler</button>
+                        <button class="btn-primary" id="saveFbBtn">Ajouter</button>
+                    </div>
+                `);
+                document.getElementById('saveFbBtn').onclick = function() {
+                    var projetId = document.getElementById('fProjetId').value;
+                    var retour = document.getElementById('fRetour').value.trim();
+                    if (!retour) { showToast('La description est obligatoire.', 'error'); return; }
+                    feedbacks.push({
+                        id: generateId(), projetId,
+                        date: document.getElementById('fDate').value,
+                        date_cloture: document.getElementById('fDateCloture').value,
+                        canal: document.getElementById('fCanal').value,
+                        categorie: document.getElementById('fCategorie').value,
+                        retour: retour,
+                        nom: document.getElementById('fNom').value,
+                        contact: document.getElementById('fContact').value,
+                        sexe: document.getElementById('fSexe').value,
+                        age: parseInt(document.getElementById('fAge').value) || null,
+                        handicap: document.getElementById('fHandicap').value,
+                        programme: document.getElementById('fProgramme').value,
+                        adresse_a: document.getElementById('fAdresseA').value,
+                        statut: document.getElementById('fStatut').value,
+                        action: document.getElementById('fAction').value
+                    });
+                    saveAll(); closeModal(); showToast('Feedback ajouté', 'success');
+                };
+            });
+
+            // Import/Export
+            addEventListenerSafe('importExcelBtn', 'click', importExcelBeneficiaires);
+            addEventListenerSafe('exportBenefBtn', 'click', exportBenefExcel);
+            addEventListenerSafe('importActiviteBtn', 'click', importExcelActivites);
+            addEventListenerSafe('importFeedbackBtn', 'click', importExcelFeedbacks);
+            addEventListenerSafe('addIndicateurBtn', 'click', addIndicateur);
+            addEventListenerSafe('indicateurProjectFilter', 'change', refreshUI);
+
+            // Filtres
+            addEventListenerSafe('projectCountryFilterInput', 'input', refreshUI);
+            addEventListenerSafe('activiteProjectFilter', 'change', refreshUI);
+            addEventListenerSafe('benefFilterProject', 'change', refreshUI);
+            addEventListenerSafe('benefFilterActivite', 'change', refreshUI);
+            addEventListenerSafe('benefSearchInput', 'input', refreshUI);
+            addEventListenerSafe('evalProjectFilter', 'change', refreshUI);
+            addEventListenerSafe('feedbackProjectFilter', 'change', refreshUI);
+            addEventListenerSafe('feedbackStatusFilter', 'change', refreshUI);
+            addEventListenerSafe('feedbackCategoryFilter', 'change', refreshUI);
+
+            addEventListenerSafe('clearBenefFilters', 'click', function() {
+                document.getElementById('benefSearchInput').value = '';
+                document.getElementById('benefFilterProject').value = 'all';
+                document.getElementById('benefFilterActivite').value = 'all';
+                refreshUI();
+            });
+
+            addEventListenerSafe('clearProjectFilters', 'click', function() {
+                document.getElementById('projectCountryFilterInput').value = '';
+                refreshUI();
+            });
+
+            // Debug
+            addEventListenerSafe('debugTestSupabase', 'click', async function() {
+                try {
+                    console.log('🧪 Test connexion Supabase...');
+                    const { error, count } = await supabaseClient.from('projects').select('*', { count: 'exact' });
+                    if (error) throw error;
+                    showToast('✅ Supabase OK (' + count + ' projets)', 'success');
+                    log('Test Supabase réussi. Projets: ' + count, 'success');
+                } catch(e) {
+                    showToast('❌ ' + e.message, 'error');
+                    log('Erreur Supabase: ' + e.message, 'error');
+                    console.error(e);
+                }
+            });
+
+            addEventListenerSafe('debugTestProject', 'click', function() {
+                if (isReadOnly) return;
+                const tp = {
+                    id: generateId(), code: 'TEST-' + Date.now().toString().slice(-4),
+                    nom: 'Projet de test', region: 'National', pays: 'Niger', statut: 'actif',
+                    budget: 100000, date_debut: new Date().toISOString().slice(0, 10),
+                    date_fin: '', description: 'Test', createdAt: new Date().toISOString(),
+                    activites: [], beneficiaires: [], evaluations: [], indicateurs: []
+                };
+                projects.push(tp);
+                currentProjectId = tp.id;
+                saveAll();
+                showToast('Projet test créé !', 'success');
+            });
+
+            addEventListenerSafe('debugClearData', 'click', async function() {
+                if (isReadOnly) return;
+                if (!confirm('⚠️ Supprimer TOUTES les données ?')) return;
+                try {
+                    projects = []; feedbacks = []; currentProjectId = null;
+                    await saveToLocalStorage();
+                    if (supabaseClient) {
+                        await supabaseClient.from('beneficiaires').delete().neq('id', 'none');
+                        await supabaseClient.from('activites').delete().neq('id', 'none');
+                        await supabaseClient.from('evaluations').delete().neq('id', 'none');
+                        await supabaseClient.from('feedbacks').delete().neq('id', 'none');
+                        await supabaseClient.from('projects').delete().neq('id', 'none');
+                    }
+                    refreshUI();
+                    showToast('✅ Données effacées', 'success');
+                } catch(e) { showToast('❌ ' + e.message, 'error'); }
+            });
+
+            addEventListenerSafe('debugForceSync', 'click', async function() {
+                const btn = this;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                try {
+                    await saveToSupabase();
+                    showToast('✅ Synchronisation forcée !', 'success');
+                } catch (e) {
+                    showToast('❌ Erreur: ' + e.message, 'error');
+                }
+                btn.innerHTML = '<i class="fas fa-rotate"></i> Forcer synchro';
+                btn.disabled = false;
+            });
+
+            addEventListenerSafe('debugViewLocalData', 'click', function() {
+                var benefCount = 0;
+                projects.forEach(p => benefCount += p.beneficiaires ? p.beneficiaires.length : 0);
+                alert('📊 DONNÉES LOCALES\n\n' +
+                    '📁 Projets: ' + projects.length + '\n' +
+                    '📋 Activités: ' + projects.reduce((s, p) => s + p.activites.length, 0) + '\n' +
+                    '👥 Bénéficiaires: ' + benefCount + '\n' +
+                    '💬 Feedbacks: ' + feedbacks.length
+                );
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            attachEventListeners();
+            loadFromLocalStorage();
+        });
+    })();
+    </script>
+</body>
+</html>

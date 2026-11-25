@@ -1,0 +1,92 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Pour tester en local (optionnel)
+local_backend: true
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+# Collections de contenu
+collections:
+  # ========== PROJETS (le plus important) ==========
+  - name: "projects"
+    label: "Projets"
+    label_singular: "Projet"
+    folder: "data/projects"
+    create: true
+    slug: "{{year}}-{{month}}-{{slug}}"
+    extension: "yml"
+    format: "yaml"
+    fields:
+      - { label: "Numéro", name: "number", widget: "string", hint: "Ex: N°018" }
+      - { label: "Période", name: "period", widget: "string", hint: "Ex: Mars 2026 — Déc. 2027" }
+      - { label: "Titre", name: "title", widget: "string" }
+      - { label: "Localisation", name: "location", widget: "string", hint: "Ex: 10 districts sanitaires, région de Zinder" }
+      - { label: "Points clés / Highlights", name: "highlights", widget: "text" }
+      - { label: "Partenaire / Bailleur", name: "partner", widget: "string", hint: "Ex: UNICEF" }
+      - { label: "Mis en avant sur l'accueil ?", name: "featured", widget: "boolean", default: false }
+      - { label: "Ordre d'affichage", name: "order", widget: "number", value_type: "int", default: 100 }
+
+  # ========== DOMAINES D'INTERVENTION ==========
+  - name: "domains"
+    label: "Domaines d'intervention"
+    files:
+      - name: "domains"
+        label: "Liste des domaines"
+        file: "data/domains.yml"
+        fields:
+          - label: "Domaines"
+            name: "items"
+            widget: "list"
+            fields:
+              - { label: "Numéro", name: "num", widget: "string" }
+              - { label: "Titre", name: "title", widget: "string" }
+              - { label: "Description", name: "description", widget: "text" }
+
+  # ========== PARTENAIRES ==========
+  - name: "partners"
+    label: "Partenaires"
+    files:
+      - name: "partners"
+        label: "Liste des partenaires"
+        file: "data/partners.yml"
+        fields:
+          - label: "Partenaires"
+            name: "items"
+            widget: "list"
+            field: { label: "Nom", name: "name", widget: "string" }
+
+  # ========== STATS ACCUEIL ==========
+  - name: "stats"
+    label: "Statistiques (Accueil)"
+    files:
+      - name: "stats"
+        label: "Chiffres clés"
+        file: "data/stats.yml"
+        fields:
+          - { label: "Collaborateurs", name: "collaborateurs", widget: "number", value_type: "int" }
+          - { label: "Projets référencés", name: "projets", widget: "number", value_type: "int" }
+          - { label: "Régions d'intervention", name: "regions", widget: "number", value_type: "int" }
+          - { label: "Domaines d'action", name: "domaines", widget: "number", value_type: "int" }
+
+  # ========== TEXTES GÉNÉRAUX ==========
+  - name: "texts"
+    label: "Textes du site"
+    files:
+      - name: "homepage"
+        label: "Page d'accueil"
+        file: "data/homepage.yml"
+        fields:
+          - { label: "Eyebrow", name: "eyebrow", widget: "string" }
+          - { label: "Titre principal", name: "title", widget: "string" }
+          - { label: "Sous-titre", name: "subtitle", widget: "text" }
+      - name: "vision"
+        label: "Qui sommes-nous (Vision / Mission / Valeurs)"
+        file: "data/vision.yml"
+        fields:
+          - { label: "Vision", name: "vision", widget: "text" }
+          - { label: "Mission", name: "mission", widget: "text" }
+          - { label: "Valeurs", name: "valeurs", widget: "text" }
+          - { label: "Gouvernance", name: "gouvernance", widget: "text" }
